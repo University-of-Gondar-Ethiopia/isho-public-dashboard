@@ -190,6 +190,14 @@ function DashboardItem(props) {
   const renderChart = () => {
     let chartConfig = {};
 
+    if (!chartData) return <span style={{ color: "#DDD" }}>No Data</span>;
+
+    const rows = chartData.rows?.toSorted((a, b) => {
+      let avalue = Number(a.length > 1 ? a[1] : a[0]);
+      let bvalue = Number(b.length > 1 ? b[1] : b[0]);
+      return avalue - bvalue;
+    });
+
     if (chartType === "pie") {
       let pieSeries = {
         colorByPoint: true,
@@ -200,13 +208,12 @@ function DashboardItem(props) {
         faded: { innerRadius: 10, additionalRadius: -30, color: "gray" },
       };
 
-      if (chartData)
-        for (const row of chartData?.rows) {
-          pieSeries?.data.push({
-            label: getItemName(chartData, row[0]),
-            value: Number(row[1]),
-          });
-        }
+      for (const row of rows) {
+        pieSeries?.data.push({
+          label: getItemName(chartData, row[0]),
+          value: Number(row[1]),
+        });
+      }
 
       return pieSeries.data.length > 0 ? (
         <PieChart
@@ -244,7 +251,7 @@ function DashboardItem(props) {
       let columnSeries = {};
       let categories = [];
       if (chartData) {
-        for (const row of chartData?.rows) {
+        for (const row of rows) {
           let n = getItemName(chartData, row[0]);
           let xAxisNames = getItemName(chartData, row[1]);
 
