@@ -13,7 +13,7 @@ import DashboardItems from "./DashboardItem";
 import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
 
-// Generate Sales Data
+
 function createData(time, amount) {
   return { time, amount: amount ?? null };
 }
