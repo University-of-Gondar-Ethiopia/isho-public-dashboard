@@ -13,12 +13,11 @@ import DashboardItems from "./DashboardItem";
 import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
 
-
 function createData(time, amount) {
   return { time, amount: amount ?? null };
 }
 
-const apiBase = "https://publicdashboard.demoinstance.net/";
+const apiBase = "https://mail.cdhi.uog.edu.et/public_html/234WAoeC/";
 const url =
   apiBase +
   "api/dashboards.json?filter=publicAccess:eq:r-------&paging=false&fields=id,name,dashboardItems[id,type,shape,x,y,width,height,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";

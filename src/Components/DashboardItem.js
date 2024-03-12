@@ -7,7 +7,7 @@ import { Grid, Paper, Snackbar } from "@mui/material";
 import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
 
-const apiBase = "https://publicdashboard.demoinstance.net/";
+const apiBase = "https://mail.cdhi.uog.edu.et/public_html/234WAoeC/";
 const dimensionParam =
   "dimension,filter,programStage,items[dimensionItem,dimensionItemType]";
 
