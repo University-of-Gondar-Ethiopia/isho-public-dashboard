@@ -82,6 +82,9 @@ function DashboardItem(props) {
         "],filters[" +
         dimensionParam +
         "]";
+    } else {
+      setChartInfo(null);
+      return;
     }
 
     fetch(encodeURI(url))
@@ -164,6 +167,9 @@ function DashboardItem(props) {
             ".json?programStage=" +
             data.programStage.id +
             "&";
+        } else {
+          setChartData(null);
+          return;
         }
 
         url += dimension + filters;
@@ -310,7 +316,7 @@ function DashboardItem(props) {
               ]}
             />
           );
-        else
+        else {
           return (
             <BarChart
               layout="vertical"
@@ -324,7 +330,8 @@ function DashboardItem(props) {
               ]}
             />
           );
-      }
+        }
+      } else return "unsupported, chart type: " + chartType;
     }
   };
 
