@@ -20,7 +20,7 @@ function createData(time, amount) {
 const apiBase = "https://mail.cdhi.uog.edu.et/public_html/234WAoeC/";
 const url =
   apiBase +
-  "api/dashboards.json?filter=publicAccess:eq:r-------&paging=false&fields=id,name,dashboardItems[id,type,shape,x,y,width,height,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
+  "api/dashboards.json?paging=false&fields=id,name,dashboardItems[id,type,shape,x,y,width,height,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
 
 export default function Chart() {
   const theme = useTheme();
