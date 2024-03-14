@@ -17,7 +17,7 @@ function createData(time, amount) {
   return { time, amount: amount ?? null };
 }
 
-const apiBase = "https://mail.cdhi.uog.edu.et/public_html/234WAoeC/";
+const apiBase = "https://hmis.dhis.et/";
 const url =
   apiBase +
   "api/dashboards.json?paging=false&fields=id,name,dashboardItems[id,type,shape,x,y,width,height,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
