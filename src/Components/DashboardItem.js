@@ -6,6 +6,12 @@ import Dashboard from "./Dashboard";
 import { Grid, Paper, Snackbar } from "@mui/material";
 import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
 
 const apiBase = "https://hmis.dhis.et/";
 const dimensionParam =
@@ -168,6 +174,7 @@ function DashboardItem(props) {
             data.programStage.id +
             "&";
         } else {
+          console.log("unsuported chart type: " + item.type);
           setChartData(null);
           return;
         }
@@ -239,7 +246,8 @@ function DashboardItem(props) {
     } else if (
       chartType === "column" ||
       chartType === "line" ||
-      chartType === "bar"
+      chartType === "bar" ||
+      chartType === "pivot_table"
     ) {
       chartConfig = { series: [] };
       chartConfig.plotOptions = {
@@ -316,7 +324,7 @@ function DashboardItem(props) {
               ]}
             />
           );
-        else {
+        else if (chartType === "column") {
           return (
             <BarChart
               layout="vertical"
@@ -330,8 +338,44 @@ function DashboardItem(props) {
               ]}
             />
           );
+        } else if (chartType == "pivot_table") {
+          console.log("Chart Data: " + title, chartData, chartConfig);
+          return (
+            <TableContainer>
+              <Table sx={{ minWidth: 650 }} aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    {chartConfig.yAxis.categories.map((col) => (
+                      <TableCell key={col}>{col}</TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {chartConfig.series.map((row) => (
+                    <TableRow
+                      key={row.label}
+                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                    >
+                      <TableCell component="th" scope="row">
+                        {row.label}
+                      </TableCell>
+                      {row.data.map((data, i) => (
+                        <TableCell key={"data" + i} align="right">
+                          {data}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          );
         }
-      } else return "unsupported, chart type: " + chartType;
+      } else {
+        return "unsupported, chart type: " + chartType;
+      }
+    } else {
+      console.log("Unsupported chart type: " + chartType);
     }
   };
 
