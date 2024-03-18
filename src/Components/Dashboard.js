@@ -17,8 +17,9 @@ import Link from "@mui/material/Link";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import { mainListItems, secondaryListItems } from "./listItems";
+import { mainListItems } from "./listItems";
 import Chart from "./Chart";
+import SecondaryListItems from "./SecondaryListItems";
 
 function Copyright(props) {
   return (
@@ -92,6 +93,11 @@ export default function Dashboard() {
   const toggleDrawer = () => {
     setOpen(!open);
   };
+  const [savedReports, setSavedReports] = React.useState(
+    JSON.parse(localStorage.getItem("saved_reports"))
+  );
+
+  const [selectedSavedChart, setSelectedSavedChart] = React.useState(null);
 
   return (
     <ThemeProvider theme={defaultTheme}>
@@ -124,7 +130,6 @@ export default function Dashboard() {
             >
               Dashboard
             </Typography>
-           
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -144,7 +149,11 @@ export default function Dashboard() {
           <List component="nav">
             {mainListItems}
             <Divider sx={{ my: 1 }} />
-            {secondaryListItems}
+            <SecondaryListItems
+              savedReports={savedReports}
+              setSavedReports={setSavedReports}
+              setSelectedSavedChart={setSelectedSavedChart}
+            />
           </List>
         </Drawer>
         <Box
@@ -163,7 +172,12 @@ export default function Dashboard() {
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
               {/* Chart */}
-              <Chart />
+              <Chart
+                savedReports={savedReports}
+                setSavedReports={setSavedReports}
+                selectedSavedChart={selectedSavedChart}
+                setSelectedSavedChart={setSelectedSavedChart}
+              />
             </Grid>
             <Copyright sx={{ pt: 4 }} />
           </Container>

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useTheme } from "@mui/material/styles";
-import { LineChart, axisClasses } from "@mui/x-charts";
+import { CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
   FormControl,
@@ -22,11 +22,17 @@ const url =
   apiBase +
   "api/dashboards.json?paging=false&fields=id,name,dashboardItems[id,type,shape,x,y,width,height,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
 
-export default function Chart() {
+export default function Chart({
+  savedReports,
+  setSavedReports,
+  selectedSavedChart,
+  setSelectedSavedChart,
+}) {
   const theme = useTheme();
   const [dashboard, setDashbaord] = React.useState(null);
   const [dashboards, setDashboards] = React.useState([]);
   const snackbar = useSnackbar();
+  const [loading, setLoading] = React.useState(true); // State variable for loading indicator
 
   //load the list of charts
   React.useEffect(() => {
@@ -34,6 +40,7 @@ export default function Chart() {
       .then((data) => data.json())
       .then((data) => {
         setDashboards(data?.dashboards);
+        setLoading(false);
       })
       .catch(() => {
         snackbar.showMessage(
@@ -42,11 +49,13 @@ export default function Chart() {
           undefined,
           { type: "error" }
         );
+        setLoading(false);
       });
   }, []);
 
   const handleChartChange = (data) => {
     setDashbaord(data.target.value);
+    setSelectedSavedChart(null);
   };
 
   const dashboardMenuList = () => {
@@ -79,13 +88,25 @@ export default function Chart() {
               label="Select Dashboard"
               onChange={handleChartChange}
             >
-              {dashboardMenuList()}
+              {loading ? (
+                <MenuItem disabled>
+                  <CircularProgress size={24} />
+                </MenuItem>
+              ) : (
+                dashboardMenuList()
+              )}
             </Select>
           </FormControl>
         </Paper>
       </Grid>
 
-      <DashboardItems items={dashboard?.dashboardItems}></DashboardItems>
+      <DashboardItems
+        savedReports={savedReports}
+        setSavedReports={setSavedReports}
+        items={
+          selectedSavedChart ? selectedSavedChart : dashboard?.dashboardItems
+        }
+      ></DashboardItems>
     </React.Fragment>
   );
 }

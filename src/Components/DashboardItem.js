@@ -13,6 +13,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import Title from "./Title";
+import { CircularProgress } from "@mui/material";
 import { useSnackbar } from "material-ui-snackbar-provider";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -29,8 +30,10 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import GaugeChart from "react-gauge-chart";
+import { Code } from "@mui/icons-material";
 
 const apiBase = "https://hmis.dhis.et/";
+// const apiBase = "https://play.dhis2.org/40.3.0/";
 const dimensionParam =
   "dimension,filter,programStage,items[dimensionItem,dimensionItemType]";
 
@@ -76,6 +79,7 @@ const getItemName = function (obj, key) {
 function DashboardItem(props) {
   const [chartInfo, setChartInfo] = React.useState();
   const [chartData, setChartData] = React.useState();
+  const [loading, setLoading] = React.useState(true);
   const snackbar = useSnackbar();
 
   React.useEffect(() => {
@@ -204,12 +208,17 @@ function DashboardItem(props) {
           })
           .then((analyticsData) => {
             setChartData(analyticsData);
+            setLoading(false);
+          })
+          .catch((error) => {
+            setLoading(false);
           });
       })
       .catch((data) => {
         snackbar.showMessage("Failed to load data!", undefined, undefined, {
           type: "error",
         });
+        setLoading(false);
       });
   }, []);
 
@@ -219,11 +228,16 @@ function DashboardItem(props) {
   const [fullScreenItem, setFullScreenItem] = React.useState(null);
   const item = props?.item;
   const id = item[type]?.id;
+  item.id = id;
 
   const renderChart = () => {
     let chartConfig = {};
 
     if (!chartData) return <span style={{ color: "#DDD" }}>No Data</span>;
+
+    if (chartData.status) {
+      return <Code>{JSON.stringify(chartData)}</Code>;
+    }
 
     const rows = chartData.rows?.toSorted((a, b) => {
       let avalue = Number(a.length > 1 ? a[1] : a[0]);
@@ -441,6 +455,31 @@ function DashboardItem(props) {
     setAnchorEl(null);
   };
 
+  const handleSaveChart = () => {
+    let saved_reports = localStorage.getItem("saved_reports");
+    let saved_reports_json;
+    if (saved_reports && saved_reports != null) {
+      saved_reports_json = JSON.parse(saved_reports);
+      if (saved_reports_json && saved_reports_json.items) {
+        if (saved_reports_json.items.find((it) => it.id == id) == undefined)
+          saved_reports_json.items.push(item);
+        else
+          snackbar.showMessage("Item already saved!", undefined, undefined, {
+            type: "error",
+          });
+      } else {
+        saved_reports_json = {};
+        saved_reports_json.items = [item];
+      }
+    } else {
+      saved_reports_json = {};
+      saved_reports_json.items = [item];
+    }
+    localStorage.setItem("saved_reports", JSON.stringify(saved_reports_json));
+    props.setSavedReports(saved_reports_json);
+    handleClose(); // Close the menu
+  };
+
   const handelFullScreen = () => {
     setFullScreenItem(id);
     const element = document.documentElement;
@@ -528,7 +567,7 @@ function DashboardItem(props) {
                 </ListItemIcon>
                 <ListItemText primary="Full Screen" />
               </MenuItem>
-              <MenuItem onClick={handleClose}>
+              <MenuItem onClick={handleSaveChart}>
                 <ListItemIcon>
                   <BookmarkAddIcon />
                 </ListItemIcon>
@@ -537,7 +576,13 @@ function DashboardItem(props) {
             </Menu>
           </Grid>
         </Grid>
-        {renderChart()}
+        {loading ? (
+          <MenuItem disabled>
+            <CircularProgress size={24} />
+          </MenuItem>
+        ) : (
+          renderChart()
+        )}
       </Paper>
     </Grid>
   );
@@ -545,7 +590,7 @@ function DashboardItem(props) {
 
 function DashboardItems(props) {
   return props?.items?.map((item) => (
-    <DashboardItem key={item.id} item={item}></DashboardItem>
+    <DashboardItem {...props} key={item.id} item={item}></DashboardItem>
   ));
 }
 
