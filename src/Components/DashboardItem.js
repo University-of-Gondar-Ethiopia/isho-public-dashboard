@@ -3,7 +3,15 @@ import PropTypes from "prop-types";
 import Typography from "@mui/material/Typography";
 import { PieChart, BarChart, LineChart } from "@mui/x-charts";
 import Dashboard from "./Dashboard";
-import { Grid, Paper, Snackbar } from "@mui/material";
+import {
+  Grid,
+  Paper,
+  Snackbar,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemText,
+} from "@mui/material";
 import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
 import Table from "@mui/material/Table";
@@ -12,6 +20,15 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import SettingsIcon from "@mui/icons-material/Settings";
+import FullscreenIcon from "@mui/icons-material/Fullscreen";
+import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
+import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
+import GaugeChart from "react-gauge-chart";
 
 const apiBase = "https://hmis.dhis.et/";
 const dimensionParam =
@@ -199,6 +216,9 @@ function DashboardItem(props) {
   const type = props?.item?.type.toLowerCase();
   const title = props?.item[type]?.displayName;
   const chartType = chartInfo?.type.toLowerCase();
+  const [fullScreenItem, setFullScreenItem] = React.useState(null);
+  const item = props?.item;
+  const id = item[type]?.id;
 
   const renderChart = () => {
     let chartConfig = {};
@@ -247,7 +267,8 @@ function DashboardItem(props) {
       chartType === "column" ||
       chartType === "line" ||
       chartType === "bar" ||
-      chartType === "pivot_table"
+      chartType === "pivot_table" ||
+      chartType === "gauge"
     ) {
       chartConfig = { series: [] };
       chartConfig.plotOptions = {
@@ -339,12 +360,12 @@ function DashboardItem(props) {
             />
           );
         } else if (chartType == "pivot_table") {
-          console.log("Chart Data: " + title, chartData, chartConfig);
           return (
             <TableContainer>
               <Table sx={{ minWidth: 650 }} aria-label="simple table">
                 <TableHead>
                   <TableRow>
+                    <TableCell key={-1}></TableCell>
                     {chartConfig.yAxis.categories.map((col) => (
                       <TableCell key={col}>{col}</TableCell>
                     ))}
@@ -361,7 +382,7 @@ function DashboardItem(props) {
                       </TableCell>
                       {row.data.map((data, i) => (
                         <TableCell key={"data" + i} align="right">
-                          {data}
+                          {data + ""}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -374,22 +395,148 @@ function DashboardItem(props) {
       } else {
         return "unsupported, chart type: " + chartType;
       }
+    }
+    if (chartType == "gauge" && chartData.rows[0] && chartData.rows[0][1]) {
+      const dataItem =
+        chartData.metaData.items[chartData.metaData.dimensions.dx].name;
+      const period =
+        chartData.metaData.items[chartData.metaData.dimensions.pe].name;
+      const orgunit =
+        chartData.metaData.items[chartData.metaData.dimensions.ou].name;
+      const percent = chartData.rows[0][1] / 100;
+
+      return (
+        <>
+          <GaugeChart
+            percent={percent}
+            nrOfLevels={30}
+            needleBaseColor={percent > 0.3 ? "#E65100" : "#00897B"}
+            needleColor={percent > 0.3 ? "#E65100" : "#00897B"}
+            textColor="#000"
+            arcsLength={[0.15, 0.1, 0.55]}
+            colors={["#009688", "#CDDC39", "#F44336"]}
+          />
+          <span align="center">
+            {dataItem} - {orgunit} - {period}
+          </span>
+        </>
+      );
     } else {
       console.log("Unsupported chart type: " + chartType);
+      return (
+        <span style={{ color: "#DDD" }}>
+          Unsupported chart type: {chartType}
+        </span>
+      );
     }
+  };
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handelFullScreen = () => {
+    setFullScreenItem(id);
+    const element = document.documentElement;
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) {
+      element.webkitRequestFullscreen();
+    } else if (element.msRequestFullscreen) {
+      element.msRequestFullscreen();
+    }
+    handleClose(); // Close the menu after entering fullscreen}
+  };
+
+  const handelFullScreenExit = () => {
+    setFullScreenItem(null);
   };
 
   return (
     <Grid item xs={12} md={6} lg={6}>
       <Paper
-        sx={{
-          p: 2,
-          display: "flex",
-          flexDirection: "column",
-          height: "10cm",
-        }}
+        sx={
+          fullScreenItem != null && fullScreenItem == id
+            ? {
+                zIndex: 1300,
+                p: 2,
+                display: "block",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                flexDirection: "column",
+                width: "100vw",
+                height: "100vh",
+                padding: "2%",
+                paddingBottom: "4%",
+              }
+            : {
+                p: 2,
+                display: "flex",
+                flexDirection: "column",
+                height: "10cm",
+              }
+        }
       >
-        <Title>{title}</Title>
+        <Grid container spacing={2}>
+          <Grid item xs={11}>
+            <Title>{title}</Title>
+          </Grid>
+          <Grid item xs={1}>
+            {fullScreenItem ? (
+              <IconButton
+                style={{
+                  position: "fixed",
+                  top: "3%",
+                  right: "3%",
+                }}
+                aria-label="exit"
+                aria-controls="long-menu"
+                aria-haspopup="true"
+                onClick={handelFullScreenExit}
+              >
+                <FullscreenExitIcon style={{ color: "grey" }} />
+              </IconButton>
+            ) : (
+              <IconButton
+                aria-label="more"
+                aria-controls="long-menu"
+                aria-haspopup="true"
+                onClick={handleClick}
+              >
+                <MoreVertIcon style={{ color: "grey" }} />
+              </IconButton>
+            )}
+            <Menu
+              id="long-menu"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handelFullScreen}>
+                <ListItemIcon>
+                  <FullscreenIcon />
+                </ListItemIcon>
+                <ListItemText primary="Full Screen" />
+              </MenuItem>
+              <MenuItem onClick={handleClose}>
+                <ListItemIcon>
+                  <BookmarkAddIcon />
+                </ListItemIcon>
+                <ListItemText primary="Save" />
+              </MenuItem>
+            </Menu>
+          </Grid>
+        </Grid>
         {renderChart()}
       </Paper>
     </Grid>
