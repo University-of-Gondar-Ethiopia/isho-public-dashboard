@@ -526,10 +526,10 @@ function DashboardItem(props) {
         }
       >
         <Grid container spacing={2}>
-          <Grid item xs={11}>
+          <Grid item xs={10} sm={11}>
             <Title>{title}</Title>
           </Grid>
-          <Grid item xs={1}>
+          <Grid item xs={2} sm={1}>
             {fullScreenItem ? (
               <IconButton
                 style={{
