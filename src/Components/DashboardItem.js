@@ -3,6 +3,12 @@ import PropTypes from "prop-types";
 import Typography from "@mui/material/Typography";
 import { PieChart, BarChart, LineChart } from "@mui/x-charts";
 import Dashboard from "./Dashboard";
+
+import * as htmlToImage from "html-to-image";
+import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
+import * as csvtojson from "csvtojson";
+
 import {
   Grid,
   Paper,
@@ -13,7 +19,7 @@ import {
   ListItemText,
 } from "@mui/material";
 import Title from "./Title";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Popover } from "@mui/material";
 import { useSnackbar } from "material-ui-snackbar-provider";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -31,6 +37,9 @@ import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import GaugeChart from "react-gauge-chart";
 import { Code } from "@mui/icons-material";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
 
 const apiBase = "https://hmis.dhis.et/";
 // const apiBase = "https://play.dhis2.org/40.3.0/";
@@ -229,10 +238,54 @@ function DashboardItem(props) {
   const item = props?.item;
   const id = item[type]?.id;
   item.id = id;
+  let chartConfig = {};
+
+  const toCSVText = (chartConfig) => {
+    if (!chartConfig) return "";
+
+    console.log(chartConfig);
+
+    let csvString = title + "\n,";
+
+    if (chartConfig.data) {
+      // it is a pie chart
+      csvString +=
+        "\n" +
+        chartConfig.data.reduce(
+          (alldata, data) => alldata + data.label + "," + data.value + "\n",
+          ""
+        );
+    }
+
+    if (chartConfig.yAxis) {
+      // it is not a pie chart
+
+      csvString +=
+        chartConfig.series.reduce((x, y) => y.label + "," + x, "") + "\n"; // table header
+
+      csvString += chartConfig.yAxis.categories.reduce(
+        (alldata, category, i) => {
+          return (
+            alldata +
+            category +
+            "," +
+            chartConfig.series.reduce((y, series, seriesIndex) => {
+              let retString = y;
+              if (series.data[i]) retString += series.data[i] + ",";
+              else retString += ",";
+              return retString;
+            }, "") +
+            "\n"
+          );
+        },
+        ""
+      );
+    }
+
+    return csvString;
+  };
 
   const renderChart = () => {
-    let chartConfig = {};
-
     if (!chartData) return <span style={{ color: "#DDD" }}>No Data</span>;
 
     if (chartData.status) {
@@ -246,7 +299,7 @@ function DashboardItem(props) {
     });
 
     if (chartType === "pie") {
-      let pieSeries = {
+      chartConfig = {
         colorByPoint: true,
         data: [],
         cornerRadius: 10,
@@ -256,13 +309,13 @@ function DashboardItem(props) {
       };
 
       for (const row of rows) {
-        pieSeries?.data.push({
+        chartConfig?.data.push({
           label: getItemName(chartData, row[0]),
           value: Number(row[1]),
         });
       }
 
-      return pieSeries.data.length > 0 ? (
+      return chartConfig.data.length > 0 ? (
         <PieChart
           slotProps={{
             legend: {
@@ -272,7 +325,7 @@ function DashboardItem(props) {
             },
           }}
           margin={{ top: 100 }}
-          series={[pieSeries]}
+          series={[chartConfig]}
         />
       ) : (
         <span style={{ color: "#DDD" }}>No Data</span>
@@ -446,6 +499,7 @@ function DashboardItem(props) {
   };
 
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [subMenuAnchorEl, setSubMenuAnchorEl] = React.useState(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -453,6 +507,11 @@ function DashboardItem(props) {
 
   const handleClose = () => {
     setAnchorEl(null);
+    setSubMenuAnchorEl(null);
+  };
+
+  const handleSubMenuOpen = (event) => {
+    setSubMenuAnchorEl(event.currentTarget);
   };
 
   const handleSaveChart = () => {
@@ -496,10 +555,51 @@ function DashboardItem(props) {
   const handelFullScreenExit = () => {
     setFullScreenItem(null);
   };
+  const componentRef = React.useRef(null);
+
+  const handleDownload = async (type) => {
+    // Perform download logic based on the selected type
+    if (type.toLowerCase() == "png") {
+      try {
+        // Convert the div to an image
+        const imageUrl = await htmlToImage.toPng(componentRef.current);
+
+        // Trigger the download of the image
+        saveAs(imageUrl, "downloaded_image.png");
+      } catch (error) {
+        snackbar.showMessage("Error downloading image", undefined, undefined, {
+          type: "error",
+        });
+      }
+    }
+    if (type.toLowerCase() == "csv") {
+      let csvString = toCSVText(chartConfig);
+      console.log(csvString);
+      saveAs(
+        new Blob([toCSVText(chartConfig)], {
+          type: "text/plain;charset=utf-8",
+        }),
+        "downloaded_csv.csv"
+      );
+    }
+
+    if (type.toLowerCase() == "excel") {
+      let csvString = toCSVText(chartConfig);
+      let json_data = await csvtojson().fromString(csvString);
+      let ws = XLSX.utils.json_to_sheet(json_data);
+      let wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "sheet");
+      XLSX.writeFile(wb, "downloaded_excel.xlsx", { type: "file" });
+    }
+
+    handleClose();
+  };
+  const popover_id = Boolean(subMenuAnchorEl) ? "simple-popover" : undefined;
 
   return (
     <Grid item xs={12} md={6} lg={6}>
       <Paper
+        ref={componentRef}
         sx={
           fullScreenItem != null && fullScreenItem == id
             ? {
@@ -573,6 +673,49 @@ function DashboardItem(props) {
                 </ListItemIcon>
                 <ListItemText primary="Save" />
               </MenuItem>
+
+              <MenuItem>
+                <ListItemIcon>
+                  <FileDownloadIcon />
+                </ListItemIcon>
+                <Popover
+                  id={popover_id}
+                  open={Boolean(subMenuAnchorEl)}
+                  anchorEl={subMenuAnchorEl}
+                  onClose={() => setSubMenuAnchorEl(null)}
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "left",
+                  }}
+                >
+                  <MenuItem onClick={() => handleDownload("csv")}>
+                    <ListItemIcon>
+                      <InsertDriveFileIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Download CSV" />
+                  </MenuItem>
+                  <MenuItem onClick={() => handleDownload("excel")}>
+                    <ListItemIcon>
+                      <InsertDriveFileIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Download Excel" />
+                  </MenuItem>
+                  <MenuItem onClick={() => handleDownload("png")}>
+                    <ListItemIcon>
+                      <InsertPhotoIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Download PNG Image" />
+                  </MenuItem>
+                </Popover>
+                <ListItemText
+                  onMouseEnter={handleSubMenuOpen}
+                  primary="Download"
+                ></ListItemText>
+              </MenuItem>
             </Menu>
           </Grid>
         </Grid>
@@ -589,9 +732,11 @@ function DashboardItem(props) {
 }
 
 function DashboardItems(props) {
-  return props?.items?.map((item) => (
-    <DashboardItem {...props} key={item.id} item={item}></DashboardItem>
-  ));
+  return props?.items?.map((item, i) => {
+    return (
+      <DashboardItem {...props} key={item.id + i} item={item}></DashboardItem>
+    );
+  });
 }
 
 DashboardItem.propTypes = {
