@@ -9,18 +9,23 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.3.3",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.14.5",
     "@mui/material": "^5.15.5",
     "@mui/x-charts": "^6.19.5",
     "csvtojson": "^2.0.10",
+    "dotenv": "^16.4.5",
     "file-saver": "^2.0.5",
     "html-to-image": "^1.11.11",
     "material-ui-snackbar-provider": "^2.0.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
     "react": "latest",
     "react-dom": "latest",
     "react-gauge-chart": "^0.4.1",
+    "react-router-dom": "^6.23.0",
     "react-scripts": "latest",
     "xlsx": "^0.18.5"
   },

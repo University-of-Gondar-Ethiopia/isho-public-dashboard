@@ -9,14 +9,22 @@ import PeopleIcon from "@mui/icons-material/People";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import LayersIcon from "@mui/icons-material/Layers";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import SendTimeExtensionIcon from "@mui/icons-material/SendTimeExtension";
+import { Link } from "@mui/material";
 
 export const mainListItems = (
   <React.Fragment>
-    <ListItemButton>
+    <ListItemButton component={Link} to="/dashboard">
       <ListItemIcon>
         <DashboardIcon />
       </ListItemIcon>
       <ListItemText primary="Dashboard" />
+    </ListItemButton>
+    <ListItemButton component={Link} to="/request-form">
+      <ListItemIcon>
+        <SendTimeExtensionIcon />
+      </ListItemIcon>
+      <ListItemText primary="Request Form" />
     </ListItemButton>
   </React.Fragment>
 );
