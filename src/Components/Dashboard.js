@@ -128,7 +128,8 @@ export default function Dashboard() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Dashboard
+              HMIS Insights: Exploring Health Metrics with Interactive
+              Visualizations
             </Typography>
           </Toolbar>
         </AppBar>
