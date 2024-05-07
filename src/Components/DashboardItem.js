@@ -3,11 +3,13 @@ import PropTypes from "prop-types";
 import Typography from "@mui/material/Typography";
 import { PieChart, BarChart, LineChart } from "@mui/x-charts";
 import Dashboard from "./Dashboard";
+import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 
 import * as htmlToImage from "html-to-image";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import * as csvtojson from "csvtojson";
+import Map from "./Map";
 
 import {
   Grid,
@@ -90,6 +92,8 @@ function DashboardItem(props) {
   const [chartData, setChartData] = React.useState();
   const [loading, setLoading] = React.useState(true);
   const snackbar = useSnackbar();
+  const [ouDimension, setOuDimension] = React.useState(); // set ou dimention for loading the shapes
+  const [shape, setShape] = React.useState(null);
 
   React.useEffect(() => {
     let item = props?.item;
@@ -105,7 +109,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,displayName,dataDimensionItems,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -118,6 +122,12 @@ function DashboardItem(props) {
         "],filters[" +
         dimensionParam +
         "]";
+    } else if (item.type == "MAP") {
+      id = item.map.id;
+      url +=
+        "api/maps/" +
+        id +
+        ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
     } else {
       setChartInfo(null);
       return;
@@ -128,10 +138,16 @@ function DashboardItem(props) {
         return response.json();
       })
       .then((data) => {
+        if (item.type == "MAP") {
+          data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
+          data.type = "map";
+        }
+
         setChartInfo(data);
 
         let dimension = "",
           filters = "";
+
         for (const filter of data.filters) {
           filters += "&filter=" + filter.dimension;
           if (filter.items.length > 0) {
@@ -166,7 +182,7 @@ function DashboardItem(props) {
             }
           }
         }
-
+        let ou_dimension;
         for (const row of data.rows) {
           dimension += "&dimension=";
           dimension += row.dimension;
@@ -178,8 +194,12 @@ function DashboardItem(props) {
           if (row.items.length > 0) {
             let rowItemsId = getObjectItems(row, "id");
             let rowDimensionItems = getObjectItems(row, "dimensionItem");
+
             if (rowItemsId.length > 0) {
               dimension += ":" + rowItemsId.join(";");
+              if (row.dimension == "ou" && item.type == "MAP") {
+                ou_dimension = "ou:" + rowItemsId.join(";");
+              } // orgunit dimentions loading shapes from the API
             }
             if (rowDimensionItems.length > 0) {
               dimension += ":" + rowDimensionItems.join(";");
@@ -195,6 +215,24 @@ function DashboardItem(props) {
         ) {
           id = item.visualization.id;
           url += "api/analytics.json?";
+        } else if (item.type === "MAP") {
+          id = item.map.id;
+          url += "api/analytics.json?";
+          //load shape data
+          let geoFeatures =
+            apiBase +
+            "api/geoFeatures.json?" +
+            "ou=" +
+            ou_dimension +
+            "&displayProperty=NAME";
+          console.log(geoFeatures);
+          fetch(encodeURI(geoFeatures))
+            .then((response) => {
+              return response.json();
+            })
+            .then((shapeData) => {
+              setShape(shapeData);
+            });
         } else if (item.type === "EVENT_CHART") {
           id = item.eventChart.id;
           url +=
@@ -292,6 +330,8 @@ function DashboardItem(props) {
       return <Code>{JSON.stringify(chartData)}</Code>;
     }
 
+    console.log(chartData, chartInfo, item);
+
     const rows = chartData.rows?.toSorted((a, b) => {
       let avalue = Number(a.length > 1 ? a[1] : a[0]);
       let bvalue = Number(b.length > 1 ? b[1] : b[0]);
@@ -335,7 +375,8 @@ function DashboardItem(props) {
       chartType === "line" ||
       chartType === "bar" ||
       chartType === "pivot_table" ||
-      chartType === "gauge"
+      chartType === "gauge" ||
+      chartType == "map"
     ) {
       chartConfig = { series: [] };
       chartConfig.plotOptions = {
@@ -385,8 +426,35 @@ function DashboardItem(props) {
                   scaleType: "band",
                 },
               ]}
-            />
+            >
+              {chartInfo.targetLineValue ? (
+                <ChartsReferenceLine
+                  lineStyle={{ strokeDasharray: "10 5" }}
+                  labelStyle={{ fontSize: "10" }}
+                  y={chartInfo.targetLineValue}
+                  label={chartInfo.targetLineLabel}
+                  labelAlign="start"
+                />
+              ) : (
+                ""
+              )}
+
+              {chartInfo.baseLineValue ? (
+                <ChartsReferenceLine
+                  lineStyle={{ strokeDasharray: "10 5" }}
+                  labelStyle={{ fontSize: "10" }}
+                  y={chartInfo.baseLineValue}
+                  label={chartInfo.baseLineLabel}
+                  labelAlign="start"
+                />
+              ) : (
+                ""
+              )}
+            </LineChart>
           );
+
+        if (chartType === "map")
+          return <Map chartConfig={chartConfig} shape={shape} />;
 
         if (chartType === "bar")
           return (
