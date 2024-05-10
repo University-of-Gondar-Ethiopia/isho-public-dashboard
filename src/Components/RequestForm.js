@@ -1,3 +1,4 @@
+// require('dotenv').config();
 import * as React from "react";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -12,16 +13,19 @@ import IconButton from "@mui/material/IconButton";
 import Badge from "@mui/material/Badge";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
 import Paper from "@mui/material/Paper";
 import Link from "@mui/material/Link";
+import { FormControl } from "@mui/material";
+import { InputLabel } from "@mui/material";
+import { OutlinedInput } from "@mui/material";
+import Button from "@mui/material/Button";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { mainListItems } from "./listItems";
 import Chart from "./Chart";
 import SecondaryListItems from "./SecondaryListItems";
-import Form from "./Form";
-import Dashboard from "./Dashboard";
 
 function Copyright(props) {
   return (
@@ -90,8 +94,36 @@ const Drawer = styled(MuiDrawer, {
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-export default function Home(props) {
-  const title = props.title;
+export default function RequestForm() {
+    const form = React.useRef();
+    const [name, setName] = React.useState("");
+    const [email, setEmail] = React.useState("");
+    const [affiliation, setAffiliation] = React.useState("");
+    const [request, setRequest] = React.useState("");
+  
+    const handleNameChange = (event) => {
+      setName(event.target.value);
+    };
+  
+    const handleEmailChange = (event) => {
+      setEmail(event.target.value);
+    };
+  
+    const handleAffiliationChange = (event) => {
+      setAffiliation(event.target.value);
+    };
+  
+    const handleRequestChange = (event) => {
+      setRequest(event.target.value);
+    };
+  
+    const handleSubmit = (event) => {
+      event.preventDefault();
+      const recipient = process.env.REACT_APP_EMAIL_ADRESS;
+  
+      window.location.href = `mailto:${recipient}?subject=Request on ${affiliation}&body=${request}`;
+    };
+
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -131,11 +163,11 @@ export default function Home(props) {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              {title == "" ? "Home" : title}
+              HMIS Insights: Exploring Health Metrics with Interactive
+              Visualizations
             </Typography>
           </Toolbar>
         </AppBar>
-
         <Drawer variant="permanent" open={open}>
           <Toolbar
             sx={{
@@ -172,18 +204,140 @@ export default function Home(props) {
             overflow: "auto",
           }}
         >
-          <Toolbar />
-          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-            {title == "Dashboard" ? (
-              <Dashboard />
-            ) : title == "Request-Form" ? (
-              <Form />
-            ) : null}
+          ////////////
+          <Grid
+      container
+      justifyContent="center"
+      alignItems="center"
+      padding={4}
+      rowSpacing={2}
+      spacing={4}
+      sx={{ padding: "10px", marginTop: "5rem" }}
+    >
+      <Paper elevation={3}>
+        <Typography
+          variant="h6"
+          align="center"
+          gutterBottom
+          sx={{ padding: "10px" }}
+        >
+          Request Form
+        </Typography>
+        <form ref={form} onSubmit={handleSubmit}>
+          <Grid container spacing={2} sx={{ padding: "15px" }}>
+            <Grid item xs={12}>
+              <TextField
+                sx={{ padding: "10px" }}
+                name="name"
+                label="Full Name"
+                variant="outlined"
+                required
+                fullWidth
+                value={name}
+                onChange={handleNameChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                sx={{ padding: "10px" }}
+                name="email"
+                label="Email"
+                variant="outlined"
+                required
+                fullWidth
+                type="email"
+                value={email}
+                onChange={handleEmailChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                sx={{ padding: "10px" }}
+                name="affiliation"
+                label="Affiliation"
+                variant="outlined"
+                required
+                fullWidth
+                value={affiliation}
+                onChange={handleAffiliationChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl
+                fullWidth
+                variant="outlined"
+                sx={{ padding: "10px" }}
+              >
+                <InputLabel htmlFor="request">Request</InputLabel>
+                <OutlinedInput
+                  name="request"
+                  id="request"
+                  multiline
+                  rows={4}
+                  required
+                  label="Request"
+                  value={request}
+                  onChange={handleRequestChange}
+                />
+              </FormControl>
+            </Grid>
+            <Grid
+              item
+              xs={12}
+              sx={{ display: "flex", justifyContent: "flex-end" }}
+            >
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                sx={{ padding: "10px" }}
+              >
+                Submit Request
+              </Button>
+            </Grid>
+          </Grid>
+        </form>
+      </Paper>
+    </Grid>
 
+
+    {/* ////// */}
+          {/* <Toolbar />
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+            <Grid container spacing={3}> */}
+              {/* Chart */}
+              {/* <Chart
+                savedReports={savedReports}
+                setSavedReports={setSavedReports}
+                selectedSavedChart={selectedSavedChart}
+                setSelectedSavedChart={setSelectedSavedChart}
+              />
+            </Grid>
             <Copyright sx={{ pt: 4 }} />
-          </Container>
+          </Container> */}
         </Box>
       </Box>
     </ThemeProvider>
   );
 }
+
+// import React, { useState, useRef } from "react";
+// import {
+//   Grid,
+//   Paper,
+//   TextField,
+//   Button,
+//   FormControl,
+//   InputLabel,
+//   OutlinedInput,
+//   Typography,
+// } from "@mui/material";
+// import emailjs from "@emailjs/browser";
+
+
+//   return (
+    
+//   );
+// };
+
+

@@ -10,16 +10,16 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Link from "@mui/material/Link";
 import Dashboard from "./Components/Dashboard";
-import Form from "./Components/Form";
-import Home from "./Components/Home";
+import RequestForm from "./Components/RequestForm";
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home title="" />} />
-        <Route path="/dashboard" element={<Home title="Dashboard" />} />
-        <Route path="/request-form" element={<Home title="Request-Form" />} />
+        
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/request-form" element={< RequestForm/>} />
       </Routes>
     </Router>
   );
