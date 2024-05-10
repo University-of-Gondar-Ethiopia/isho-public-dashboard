@@ -10,6 +10,7 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import LayersIcon from "@mui/icons-material/Layers";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { IconButton } from "@mui/material";
+import { useSnackbar } from "material-ui-snackbar-provider";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const truncateText = (text, maxLength) => {
@@ -35,6 +36,7 @@ function SecondaryListItems({
   };
 
   const [hoverIndex, setHoverIndex] = React.useState(null);
+  const snackbar = useSnackbar();
 
   return (
     <React.Fragment>
@@ -42,7 +44,17 @@ function SecondaryListItems({
         style={{ cursor: "pointer" }}
         component="div"
         onClick={() => {
-          setSelectedSavedChart(savedReports.items);
+          if (savedReports.items.length > 0)
+            setSelectedSavedChart(savedReports.items);
+          else
+            snackbar.showMessage(
+              "No saved reports yet. Click on save button to save reports.",
+              undefined,
+              { autoHideDuration: 1000 },
+              {
+                type: "info",
+              }
+            );
         }}
         inset
       >
