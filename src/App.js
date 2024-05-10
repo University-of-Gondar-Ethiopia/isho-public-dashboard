@@ -16,10 +16,9 @@ export default function App() {
   return (
     <Router>
       <Routes>
-        
         <Route path="/" element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/request-form" element={< RequestForm/>} />
+        <Route path="/request-form" element={<RequestForm />} />
       </Routes>
     </Router>
   );
