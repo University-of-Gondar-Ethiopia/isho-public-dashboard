@@ -120,8 +120,9 @@ export default function RequestForm() {
   const handleSubmit = (event) => {
     event.preventDefault();
     const recipient = process.env.REACT_APP_EMAIL_ADRESS;
-
-    window.location.href = `mailto:${recipient}?subject=Request on ${affiliation}&body=${request}`;
+    window.open(
+      `mailto:${recipient}?subject=Request on ${affiliation}&body=${request}`
+    );
   };
 
   const [open, setOpen] = React.useState(true);
@@ -204,7 +205,6 @@ export default function RequestForm() {
             overflow: "auto",
           }}
         >
-          ////////////
           <Grid
             container
             justifyContent="center"
