@@ -202,103 +202,105 @@ export default function RequestForm() {
             flexGrow: 1,
             height: "100vh",
             overflow: "auto",
+            pl: 4,
           }}
         >
-          ////////////
-          <Grid
-            container
-            justifyContent="center"
-            alignItems="center"
-            padding={4}
-            rowSpacing={2}
-            spacing={4}
-            sx={{ padding: "10px", marginTop: "5rem" }}
-          >
-            <Paper elevation={3}>
-              <Typography
-                variant="h6"
-                align="center"
-                gutterBottom
-                sx={{ padding: "10px" }}
-              >
-                Request Form
-              </Typography>
-              <form ref={form} onSubmit={handleSubmit}>
-                <Grid container spacing={2} sx={{ padding: "15px" }}>
-                  <Grid item xs={12}>
-                    <TextField
-                      sx={{ padding: "10px" }}
-                      name="name"
-                      label="Full Name"
-                      variant="outlined"
-                      required
-                      fullWidth
-                      value={name}
-                      onChange={handleNameChange}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      sx={{ padding: "10px" }}
-                      name="email"
-                      label="Email"
-                      variant="outlined"
-                      required
-                      fullWidth
-                      type="email"
-                      value={email}
-                      onChange={handleEmailChange}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      sx={{ padding: "10px" }}
-                      name="affiliation"
-                      label="Affiliation"
-                      variant="outlined"
-                      required
-                      fullWidth
-                      value={affiliation}
-                      onChange={handleAffiliationChange}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <FormControl
-                      fullWidth
-                      variant="outlined"
-                      sx={{ padding: "10px" }}
-                    >
-                      <InputLabel htmlFor="request">Request</InputLabel>
-                      <OutlinedInput
-                        name="request"
-                        id="request"
-                        multiline
-                        rows={4}
+          <Container maxWidth="lg" sx={{ mt: 4, mb: 4, p: 4 }}>
+            <Grid
+              container
+              justifyContent="center"
+              alignItems="center"
+              padding={4}
+              rowSpacing={2}
+              spacing={4}
+              sx={{ padding: "10px", marginTop: "5rem" }}
+            >
+              <Paper elevation={3}>
+                <Typography
+                  variant="h6"
+                  align="center"
+                  gutterBottom
+                  sx={{ padding: "10px" }}
+                >
+                  Request Form
+                </Typography>
+                <form ref={form} onSubmit={handleSubmit}>
+                  <Grid container spacing={2} sx={{ padding: "15px" }}>
+                    <Grid item xs={12}>
+                      <TextField
+                        sx={{ padding: "10px" }}
+                        name="name"
+                        label="Full Name"
+                        variant="outlined"
                         required
-                        label="Request"
-                        value={request}
-                        onChange={handleRequestChange}
+                        fullWidth
+                        value={name}
+                        onChange={handleNameChange}
                       />
-                    </FormControl>
-                  </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    sx={{ display: "flex", justifyContent: "flex-end" }}
-                  >
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                      sx={{ padding: "10px" }}
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        sx={{ padding: "10px" }}
+                        name="email"
+                        label="Email"
+                        variant="outlined"
+                        required
+                        fullWidth
+                        type="email"
+                        value={email}
+                        onChange={handleEmailChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        sx={{ padding: "10px" }}
+                        name="affiliation"
+                        label="Affiliation"
+                        variant="outlined"
+                        required
+                        fullWidth
+                        value={affiliation}
+                        onChange={handleAffiliationChange}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <FormControl
+                        fullWidth
+                        variant="outlined"
+                        sx={{ padding: "10px" }}
+                      >
+                        <InputLabel htmlFor="request">Request</InputLabel>
+                        <OutlinedInput
+                          name="request"
+                          id="request"
+                          multiline
+                          rows={4}
+                          required
+                          label="Request"
+                          value={request}
+                          onChange={handleRequestChange}
+                        />
+                      </FormControl>
+                    </Grid>
+                    <Grid
+                      item
+                      xs={12}
+                      sx={{ display: "flex", justifyContent: "flex-end" }}
                     >
-                      Submit Request
-                    </Button>
+                      <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        sx={{ padding: "10px" }}
+                      >
+                        Submit Request
+                      </Button>
+                    </Grid>
                   </Grid>
-                </Grid>
-              </form>
-            </Paper>
-          </Grid>
+                </form>
+              </Paper>
+            </Grid>
+          </Container>
         </Box>
       </Box>
     </ThemeProvider>
