@@ -20,6 +20,7 @@ import {
   MenuItem,
   ListItemText,
 } from "@mui/material";
+
 import Title from "./Title";
 import { CircularProgress, Popover } from "@mui/material";
 import { useSnackbar } from "material-ui-snackbar-provider";
@@ -37,7 +38,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
-import GaugeChart from "react-gauge-chart";
+import GaugeChart from "../lib";
 import { Code } from "@mui/icons-material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
@@ -281,8 +282,6 @@ function DashboardItem(props) {
   const toCSVText = (chartConfig) => {
     if (!chartConfig) return "";
 
-    console.log(chartConfig);
-
     let csvString = title + "\n,";
 
     if (chartConfig.data) {
@@ -478,7 +477,31 @@ function DashboardItem(props) {
                   },
                 },
               ]}
-            />
+            >
+              {chartInfo.targetLineValue ? (
+                <ChartsReferenceLine
+                  lineStyle={{ strokeDasharray: "10 5" }}
+                  labelStyle={{ fontSize: "10" }}
+                  x={chartInfo.targetLineValue}
+                  label={chartInfo.targetLineLabel}
+                  labelAlign="start"
+                />
+              ) : (
+                ""
+              )}
+
+              {chartInfo.baseLineValue ? (
+                <ChartsReferenceLine
+                  lineStyle={{ strokeDasharray: "10 5" }}
+                  labelStyle={{ fontSize: "10" }}
+                  x={chartInfo.baseLineValue}
+                  label={chartInfo.baseLineLabel}
+                  labelAlign="start"
+                />
+              ) : (
+                ""
+              )}
+            </BarChart>
           );
         else if (chartType === "column") {
           return (
@@ -492,7 +515,31 @@ function DashboardItem(props) {
                   scaleType: "band",
                 },
               ]}
-            />
+            >
+              {chartInfo.targetLineValue ? (
+                <ChartsReferenceLine
+                  lineStyle={{ strokeDasharray: "10 5" }}
+                  labelStyle={{ fontSize: "10" }}
+                  y={chartInfo.targetLineValue}
+                  label={chartInfo.targetLineLabel}
+                  labelAlign="start"
+                />
+              ) : (
+                ""
+              )}
+
+              {chartInfo.baseLineValue ? (
+                <ChartsReferenceLine
+                  lineStyle={{ strokeDasharray: "10 5" }}
+                  labelStyle={{ fontSize: "10" }}
+                  y={chartInfo.baseLineValue}
+                  label={chartInfo.baseLineLabel}
+                  labelAlign="start"
+                />
+              ) : (
+                ""
+              )}
+            </BarChart>
           );
         } else if (chartType == "pivot_table") {
           return (
@@ -535,21 +582,28 @@ function DashboardItem(props) {
       const dataItem =
         chartData.metaData.items[chartData.metaData.dimensions.dx].name;
       const period =
-        chartData.metaData.items[chartData.metaData.dimensions.pe].name;
+        chartData.metaData.items[chartData.metaData.dimensions.pe]?.name;
       const orgunit =
         chartData.metaData.items[chartData.metaData.dimensions.ou].name;
       const percent = chartData.rows[0][1] / 100;
 
+      console.log(
+        chartInfo.targetLineValue,
+        "is target defined",
+        chartInfo.baseLineValue
+      );
       return (
         <>
           <GaugeChart
             percent={percent}
             nrOfLevels={30}
-            needleBaseColor={percent > 0.3 ? "#E65100" : "#00897B"}
-            needleColor={percent > 0.3 ? "#E65100" : "#00897B"}
+            // needleBaseColor={percent > 0.3 ? "#E65100" : "#00897B"}
+            // needleColor={percent > 0.3 ? "#E65100" : "#00897B"}
             textColor="#000"
             arcsLength={[0.15, 0.1, 0.55]}
             colors={["#009688", "#CDDC39", "#F44336"]}
+            target={0.8}
+            baseline={chartInfo.baseLineValue}
           />
           <span align="center">
             {dataItem} - {orgunit} - {period}
