@@ -4,8 +4,21 @@
   "icons": [
     {
       "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
+      "sizes": "64x64 32x32 24x24 16x16 144x144 192x192 256x256 512x512",
       "type": "image/x-icon"
+    },
+
+    {
+      "src" : "favicon-144x144.png",
+      "sizes" : "144x144",
+      "type" : "image/png"
+    },
+
+    {
+      "src" : "favicon-512x512.png",
+      "sizes" : "512x512",
+      "type" : "image/png",
+      "purpose" : "any maskable"
     }
   ],
   "start_url": ".",
