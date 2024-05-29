@@ -11,7 +11,12 @@ import LayersIcon from "@mui/icons-material/Layers";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { IconButton } from "@mui/material";
 import { useSnackbar } from "material-ui-snackbar-provider";
+import InstallButton from "./InstallButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { Download } from "@mui/icons-material";
+import useInstallPrompt from "../hooks/useInstallPrompt";
+import useDynamicPosition from "../hooks/useDynamicPosition";
+import Box from "@mui/material/Box";
 
 const truncateText = (text, maxLength) => {
   if (text.length <= maxLength) {
@@ -37,6 +42,8 @@ function SecondaryListItems({
 
   const [hoverIndex, setHoverIndex] = React.useState(null);
   const snackbar = useSnackbar();
+  const { isAppInstalled, promptInstall } = useInstallPrompt();
+  const position = useDynamicPosition();
 
   return (
     <React.Fragment>
@@ -88,6 +95,23 @@ function SecondaryListItems({
             )}
           </ListItemButton>
         ))}
+      <Box
+        sx={{
+          position: "relative",
+          bottom: position.bottom,
+          left: 5,
+        }}
+      >
+        <ListItemButton onClick={promptInstall}>
+          <ListItemIcon>
+            <Download />
+          </ListItemIcon>
+
+          <ListItemText>
+            <InstallButton />
+          </ListItemText>
+        </ListItemButton>
+      </Box>
     </React.Fragment>
   );
 }

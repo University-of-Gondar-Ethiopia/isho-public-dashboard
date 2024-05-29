@@ -10,14 +10,10 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import LayersIcon from "@mui/icons-material/Layers";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import SendTimeExtensionIcon from "@mui/icons-material/SendTimeExtension";
-import InstallButton from "./InstallButton";
 import { Link } from "@mui/material";
 
 export const mainListItems = (
   <React.Fragment>
-    <ListItemButton>
-      <InstallButton />
-    </ListItemButton>
     <ListItemButton component={Link} to="/dashboard">
       <ListItemIcon>
         <DashboardIcon />

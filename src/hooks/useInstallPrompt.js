@@ -1,26 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 const useInstallPrompt = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [isAppInstalled, setIsAppInstalled] = useState(() => {
+    // Check localStorage to persist install state across sessions
+    const storedValue = localStorage.getItem("isAppInstalled");
+    return storedValue === "true" || window.matchMedia("(display-mode: standalone)").matches;
+  });
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
-      console.log('beforeinstallprompt event triggered');
+      console.log("beforeinstallprompt event triggered");
       e.preventDefault();
       setDeferredPrompt(e);
-      console.log('beforeinstallprompt event fired and deferred prompt is set');
+      console.log("beforeinstallprompt event fired and deferred prompt is set");
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // Check if the app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setIsAppInstalled(true);
-    }
-
+    // Clean up the event listener
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
     };
   }, []);
 
@@ -28,18 +31,19 @@ const useInstallPrompt = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
+        if (choiceResult.outcome === "accepted") {
+          console.log("User accepted the install prompt");
           setIsAppInstalled(true);
+          localStorage.setItem("isAppInstalled", "true"); // Persist the state
         } else {
-          console.log('User dismissed the install prompt');
+          console.log("User dismissed the install prompt");
         }
         setDeferredPrompt(null);
       });
     } else if (isAppInstalled) {
-      alert('The app is already installed.');
+      alert("The app is already installed.");
     } else {
-      console.log('Deferred prompt is not set');
+      console.log("Deferred prompt is not set");
     }
   };
 
