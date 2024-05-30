@@ -7,11 +7,11 @@ const useDynamicPosition = () => {
     const width = window.innerWidth;
     let bottom;
     if (width < 600) {
-      bottom = -200; 
-    } else if (width < 960) {
-      bottom = -300; 
-    } else if (width < 1280) {
       bottom = -400; 
+    } else if (width < 960) {
+      bottom = -480; 
+    } else if (width < 1280) {
+      bottom = -500; 
     } else {
       bottom = -600; 
     }
