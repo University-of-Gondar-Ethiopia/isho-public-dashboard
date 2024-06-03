@@ -1,10 +1,22 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 import Typography from "@mui/material/Typography";
-import { PieChart, BarChart, LineChart } from "@mui/x-charts";
+import {
+  PieChart,
+  BarChart,
+  LineChart,
+  ResponsiveChartContainer,
+  BarPlot,
+  LinePlot,
+  ChartsXAxis,
+  ChartsLegend,
+  ChartsYAxis,
+  ChartsTooltip,
+  ChartsAxisHighlight,
+} from "@mui/x-charts";
 import Dashboard from "./Dashboard";
 import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
-
+import regression from "regression";
 import * as htmlToImage from "html-to-image";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
@@ -96,6 +108,22 @@ function DashboardItem(props) {
   const [ouDimension, setOuDimension] = React.useState(); // set ou dimention for loading the shapes
   const [shape, setShape] = React.useState(null);
 
+  // Sample data points
+  const data = [
+    [1, 2],
+    [2, 3],
+    [3, 2.5],
+    [4, 5],
+    [5, 4],
+    // Add more data points as needed
+  ];
+
+  // Polynomial Regression
+  const degree = 2; // Degree of the polynomial
+  const resultPolynomial = regression.polynomial(data, { order: degree });
+
+  console.log("Polynomial Regression Coefficients:", resultPolynomial.points);
+
   React.useEffect(() => {
     let item = props?.item;
     let url = apiBase;
@@ -110,7 +138,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -413,9 +441,33 @@ function DashboardItem(props) {
           });
         }
 
-        if (chartType === "line")
+        if (chartType === "line") {
+          console.log("Chart config", chartConfig);
+          //calcualte the trend line for each series
+          if (chartInfo.regressionType != "NONE") {
+            chartConfig?.series?.forEach((series) => {
+              const dataPoints = series.data.map((value, index) => [
+                index,
+                value,
+              ]);
+              let regressionResult;
+              if (chartInfo.regressionType == "LINEAR")
+                regressionResult = regression.linear(dataPoints);
+
+              if (chartInfo.regressionType == "POLYNOMIAL")
+                regressionResult = regression.polynomial(dataPoints);
+
+              console.log("chartInfo", chartInfo);
+              chartConfig?.series.push({
+                data: regressionResult.points.map((e) => e[1]),
+                label: series.label + " (trend)",
+                type: "line",
+              });
+            });
+          }
           return (
             <LineChart
+              margin={{ top: 100 }}
               layout="vertical"
               series={chartConfig.series}
               xAxis={[
@@ -451,11 +503,11 @@ function DashboardItem(props) {
               )}
             </LineChart>
           );
-
+        }
         if (chartType === "map")
           return <Map chartConfig={chartConfig} shape={shape} />;
 
-        if (chartType === "bar")
+        if (chartType === "bar") {
           return (
             <BarChart
               layout="horizontal"
@@ -503,44 +555,117 @@ function DashboardItem(props) {
               )}
             </BarChart>
           );
-        else if (chartType === "column") {
-          return (
-            <BarChart
-              layout="vertical"
-              series={chartConfig.series}
-              xAxis={[
-                {
-                  data: chartConfig.yAxis.categories,
-                  barGapRatio: 0.4,
-                  scaleType: "band",
-                },
-              ]}
-            >
-              {chartInfo.targetLineValue ? (
-                <ChartsReferenceLine
-                  lineStyle={{ strokeDasharray: "10 5" }}
-                  labelStyle={{ fontSize: "10" }}
-                  y={chartInfo.targetLineValue}
-                  label={chartInfo.targetLineLabel}
-                  labelAlign="start"
-                />
-              ) : (
-                ""
-              )}
+        } else if (chartType === "column") {
+          console.log("Chart config", chartConfig);
+          //calcualte the trend line for each series
+          if (chartInfo.regressionType != "NONE") {
+            chartConfig?.series?.forEach((series, i) => {
+              chartConfig.series[i].type = "bar";
+              chartConfig.series[i].showMark = false;
 
-              {chartInfo.baseLineValue ? (
-                <ChartsReferenceLine
-                  lineStyle={{ strokeDasharray: "10 5" }}
-                  labelStyle={{ fontSize: "10" }}
-                  y={chartInfo.baseLineValue}
-                  label={chartInfo.baseLineLabel}
-                  labelAlign="start"
-                />
-              ) : (
-                ""
-              )}
-            </BarChart>
-          );
+              const dataPoints = series.data.map((value, index) => [
+                index,
+                value,
+              ]);
+              let regressionResult;
+              if (chartInfo.regressionType == "LINEAR")
+                regressionResult = regression.linear(dataPoints);
+
+              if (chartInfo.regressionType == "POLYNOMIAL")
+                regressionResult = regression.polynomial(dataPoints);
+
+              console.log("chartInfo", chartInfo);
+              chartConfig?.series.push({
+                data: regressionResult.points.map((e) => e[1]),
+                label: series.label + " (trend)",
+                type: "line",
+              });
+            });
+            return (
+              <ResponsiveChartContainer
+                xAxis={[
+                  {
+                    data: chartConfig.yAxis.categories,
+                    barGapRatio: 0.4,
+                    scaleType: "band",
+                    id: "x-axis-id",
+                  },
+                ]}
+                series={chartConfig.series}
+                margin={{ top: 100 }}
+              >
+                <BarPlot layout="horizontal" />
+                <LinePlot />
+
+                <ChartsYAxis />
+                <ChartsXAxis />
+                <ChartsAxisHighlight />
+                <ChartsTooltip />
+                <ChartsLegend direction="row" />
+                {chartInfo.targetLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.targetLineValue}
+                    label={chartInfo.targetLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+
+                {chartInfo.baseLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.baseLineValue}
+                    label={chartInfo.baseLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+              </ResponsiveChartContainer>
+            );
+          } else {
+            return (
+              <BarChart
+                layout="vertical"
+                series={chartConfig.series}
+                xAxis={[
+                  {
+                    data: chartConfig.yAxis.categories,
+                    barGapRatio: 0.4,
+                    scaleType: "band",
+                  },
+                ]}
+              >
+                {chartInfo.targetLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.targetLineValue}
+                    label={chartInfo.targetLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+
+                {chartInfo.baseLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.baseLineValue}
+                    label={chartInfo.baseLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+              </BarChart>
+            );
+          }
         } else if (chartType == "pivot_table") {
           return (
             <TableContainer>
@@ -743,7 +868,7 @@ function DashboardItem(props) {
                 p: 2,
                 display: "flex",
                 flexDirection: "column",
-                height: "10cm",
+                height: "12cm",
               }
         }
       >
