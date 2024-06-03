@@ -451,9 +451,20 @@ function DashboardItem(props) {
 
         if (chartType === "line") {
           //calcualte the trend line for each series
-
+          let ChartStyle = {
+            [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
+              strokeWidth: 1,
+            },
+            [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]:
+              {
+                fill: "#fff",
+              },
+            [`& .${markElementClasses.highlighted}`]: {
+              stroke: "none",
+            },
+          };
           if (chartInfo.regressionType != "NONE") {
-            chartConfig?.series?.forEach((series) => {
+            chartConfig?.series?.forEach((series, i) => {
               const dataPoints = series.data.map((value, index) => [
                 index,
                 value,
@@ -475,11 +486,15 @@ function DashboardItem(props) {
                 regressionResult.points = result.map((e, i) => [i, e]);
               }
 
+              ChartStyle[`.MuiLineElement-series-trend${i}`] = {
+                strokeDasharray: "3 4 5 2",
+              };
+
               chartConfig?.series.push({
                 data: regressionResult.points.map((e) => e[1]),
                 label: series.label + " (trend)",
                 type: "line",
-                id: "trend",
+                id: `trend${i}`,
               });
             });
           }
@@ -487,21 +502,7 @@ function DashboardItem(props) {
             <LineChart
               margin={{ top: 100 }}
               layout="vertical"
-              sx={{
-                [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
-                  strokeWidth: 1,
-                },
-                ".MuiLineElement-series-trend": {
-                  strokeDasharray: "3 4 5 2",
-                },
-                [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]:
-                  {
-                    fill: "#fff",
-                  },
-                [`& .${markElementClasses.highlighted}`]: {
-                  stroke: "none",
-                },
-              }}
+              sx={ChartStyle}
               series={chartConfig.series}
               xAxis={[
                 {
@@ -594,6 +595,18 @@ function DashboardItem(props) {
           );
         } else if (chartType === "column") {
           //calcualte the trend line for each series
+          let ChartStyle = {
+            [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
+              strokeWidth: 1,
+            },
+            [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]:
+              {
+                fill: "#fff",
+              },
+            [`& .${markElementClasses.highlighted}`]: {
+              stroke: "none",
+            },
+          };
           if (chartInfo.regressionType != "NONE") {
             chartConfig?.series?.forEach((series, i) => {
               chartConfig.series[i].type = "bar";
@@ -620,6 +633,10 @@ function DashboardItem(props) {
                 regressionResult.points = result.map((e, i) => [i, e]);
               }
 
+              ChartStyle[`.MuiLineElement-series-trend${i}`] = {
+                strokeDasharray: "3 4 5 2",
+              };
+
               chartConfig?.series.push({
                 data: regressionResult.points.map((e) => e[1]),
                 label: series.label + " (trend)",
@@ -637,11 +654,8 @@ function DashboardItem(props) {
                   },
                 ]}
                 series={chartConfig.series}
-                margin={{ top: 100 }}
-                axisHighlight={{
-                  x: "line", // Or 'none', or 'band'
-                  y: "line", // Or 'none'
-                }}
+                margin={{ top: 40 + 30 * chartConfig.series.length }}
+                sx={ChartStyle}
               >
                 <BarPlot layout="horizontal" />
                 <LinePlot />
