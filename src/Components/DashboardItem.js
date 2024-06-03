@@ -511,6 +511,7 @@ function DashboardItem(props) {
                   scaleType: "band",
                 },
               ]}
+              margin={{ top: 40 + 30 * chartConfig.series.length }}
             >
               {chartInfo.targetLineValue ? (
                 <ChartsReferenceLine
@@ -702,6 +703,7 @@ function DashboardItem(props) {
                     scaleType: "band",
                   },
                 ]}
+                margin={{ top: 40 + 30 * chartConfig.series.length }}
               >
                 {chartInfo.targetLineValue ? (
                   <ChartsReferenceLine
@@ -931,7 +933,7 @@ function DashboardItem(props) {
                 p: 2,
                 display: "flex",
                 flexDirection: "column",
-                height: "12cm",
+                height: "13cm",
               }
         }
       >
