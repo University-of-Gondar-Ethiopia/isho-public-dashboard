@@ -14,7 +14,11 @@ import {
   ChartsTooltip,
   ChartsAxisHighlight,
 } from "@mui/x-charts";
-import Dashboard from "./Dashboard";
+import {
+  lineElementClasses,
+  markElementClasses,
+} from "@mui/x-charts/LineChart";
+
 import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 import regression from "regression";
 import * as htmlToImage from "html-to-image";
@@ -55,6 +59,12 @@ import { Code } from "@mui/icons-material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
+
+import * as science from "science";
+// LOESS function
+const loess = function (xval, yval, bandwidth) {
+  return science.stats.loess().bandwidth(bandwidth)(xval, yval);
+};
 
 const apiBase = "https://hmis.dhis.et/";
 // const apiBase = "https://play.dhis2.org/40.3.0/";
@@ -121,8 +131,6 @@ function DashboardItem(props) {
   // Polynomial Regression
   const degree = 2; // Degree of the polynomial
   const resultPolynomial = regression.polynomial(data, { order: degree });
-
-  console.log("Polynomial Regression Coefficients:", resultPolynomial.points);
 
   React.useEffect(() => {
     let item = props?.item;
@@ -442,8 +450,8 @@ function DashboardItem(props) {
         }
 
         if (chartType === "line") {
-          console.log("Chart config", chartConfig);
           //calcualte the trend line for each series
+
           if (chartInfo.regressionType != "NONE") {
             chartConfig?.series?.forEach((series) => {
               const dataPoints = series.data.map((value, index) => [
@@ -457,11 +465,21 @@ function DashboardItem(props) {
               if (chartInfo.regressionType == "POLYNOMIAL")
                 regressionResult = regression.polynomial(dataPoints);
 
-              console.log("chartInfo", chartInfo);
+              if (chartInfo.regressionType == "LOESS") {
+                const result = loess(
+                  dataPoints.map((d) => d[0]),
+                  dataPoints.map((d) => d[1]),
+                  0.45
+                );
+                regressionResult = {};
+                regressionResult.points = result.map((e, i) => [i, e]);
+              }
+
               chartConfig?.series.push({
                 data: regressionResult.points.map((e) => e[1]),
                 label: series.label + " (trend)",
                 type: "line",
+                id: "trend",
               });
             });
           }
@@ -469,6 +487,21 @@ function DashboardItem(props) {
             <LineChart
               margin={{ top: 100 }}
               layout="vertical"
+              sx={{
+                [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
+                  strokeWidth: 1,
+                },
+                ".MuiLineElement-series-trend": {
+                  strokeDasharray: "3 4 5 2",
+                },
+                [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]:
+                  {
+                    fill: "#fff",
+                  },
+                [`& .${markElementClasses.highlighted}`]: {
+                  stroke: "none",
+                },
+              }}
               series={chartConfig.series}
               xAxis={[
                 {
@@ -504,12 +537,16 @@ function DashboardItem(props) {
             </LineChart>
           );
         }
+
         if (chartType === "map")
           return <Map chartConfig={chartConfig} shape={shape} />;
 
         if (chartType === "bar") {
           return (
             <BarChart
+              axisHighlight={{
+                y: "line", // Or 'none'
+              }}
               layout="horizontal"
               series={chartConfig.series}
               yAxis={[
@@ -556,7 +593,6 @@ function DashboardItem(props) {
             </BarChart>
           );
         } else if (chartType === "column") {
-          console.log("Chart config", chartConfig);
           //calcualte the trend line for each series
           if (chartInfo.regressionType != "NONE") {
             chartConfig?.series?.forEach((series, i) => {
@@ -574,7 +610,16 @@ function DashboardItem(props) {
               if (chartInfo.regressionType == "POLYNOMIAL")
                 regressionResult = regression.polynomial(dataPoints);
 
-              console.log("chartInfo", chartInfo);
+              if (chartInfo.regressionType == "LOESS") {
+                const result = loess(
+                  dataPoints.map((d) => d[0]),
+                  dataPoints.map((d) => d[1]),
+                  0.45
+                );
+                regressionResult = {};
+                regressionResult.points = result.map((e, i) => [i, e]);
+              }
+
               chartConfig?.series.push({
                 data: regressionResult.points.map((e) => e[1]),
                 label: series.label + " (trend)",
@@ -593,6 +638,10 @@ function DashboardItem(props) {
                 ]}
                 series={chartConfig.series}
                 margin={{ top: 100 }}
+                axisHighlight={{
+                  x: "line", // Or 'none', or 'band'
+                  y: "line", // Or 'none'
+                }}
               >
                 <BarPlot layout="horizontal" />
                 <LinePlot />
