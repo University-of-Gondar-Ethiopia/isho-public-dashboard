@@ -1,3 +1,5 @@
+[![Netlify Status](https://api.netlify.com/api/v1/badges/247910da-f606-40dd-9fbc-14a3e6efff30/deploy-status)](https://app.netlify.com/sites/public-dashboard/deploys)
+
 # Public Dashboard for DHIS2
 
 This is a public dashboard application built with React and Material-UI. It fetches data from the DHIS2 API and displays it in various visualizations.
