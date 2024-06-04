@@ -1,0 +1,9 @@
+[[redirects]]
+  from = "/dashboard"
+  to = "/#/dashboard"
+  status = 200
+  
+[[redirects]]
+    from = "/request-form"
+    to = "/#/request-form"
+    status = 200
