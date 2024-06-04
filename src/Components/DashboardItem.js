@@ -19,8 +19,9 @@ import {
   Menu,
   MenuItem,
   ListItemText,
+  Button,
 } from "@mui/material";
-
+import AreaChartComponent from "./AreaChartComponent";
 import Title from "./Title";
 import { CircularProgress, Popover } from "@mui/material";
 import { useSnackbar } from "material-ui-snackbar-provider";
@@ -329,7 +330,7 @@ function DashboardItem(props) {
       return <Code>{JSON.stringify(chartData)}</Code>;
     }
 
-    console.log(chartData, chartInfo, item);
+    console.log(chartData, chartInfo, "here", item);
 
     const rows = chartData.rows?.toSorted((a, b) => {
       let avalue = Number(a.length > 1 ? a[1] : a[0]);
@@ -608,6 +609,16 @@ function DashboardItem(props) {
           <span align="center">
             {dataItem} - {orgunit} - {period}
           </span>
+        </>
+      );
+    } else if (chartInfo.type == "AREA") {
+      return (
+        <>
+          <AreaChartComponent
+            chartData={chartData}
+            chartInfo={chartInfo}
+            item={item}
+          />
         </>
       );
     } else {

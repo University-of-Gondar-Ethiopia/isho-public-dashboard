@@ -19,6 +19,7 @@
     "@mui/material": "^5.15.5",
     "@mui/x-charts": "^6.19.5",
     "csvtojson": "^2.0.10",
+    "d3": "^7.6.1",
     "echarts": "^5.5.0",
     "file-saver": "^2.0.5",
     "html-to-image": "^1.11.11",
@@ -28,8 +29,8 @@
     "react-dom": "latest",
     "react-router-dom": "^6.23.0",
     "react-scripts": "latest",
-    "xlsx": "^0.18.5",
-    "d3": "^7.6.1"
+    "recharts": "^2.12.7",
+    "xlsx": "^0.18.5"
   },
   "browserslist": {
     "production": [

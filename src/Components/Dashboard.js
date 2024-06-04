@@ -19,6 +19,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { mainListItems } from "./listItems";
 import Chart from "./Chart";
+// import AreaChart from "./AreaChartLine";
 import SecondaryListItems from "./SecondaryListItems";
 
 function Copyright(props) {
@@ -29,6 +30,7 @@ function Copyright(props) {
       align="center"
       {...props}
     >
+      {/* <AreaChart /> */}
       {"Copyright © "}
       <Link color="inherit" href="https://habtechsolution.com/">
         HABTech Solution
