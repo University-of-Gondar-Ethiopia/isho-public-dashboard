@@ -1,10 +1,26 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 import Typography from "@mui/material/Typography";
-import { PieChart, BarChart, LineChart } from "@mui/x-charts";
-import Dashboard from "./Dashboard";
-import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
+import {
+  PieChart,
+  BarChart,
+  LineChart,
+  ResponsiveChartContainer,
+  BarPlot,
+  LinePlot,
+  ChartsXAxis,
+  ChartsLegend,
+  ChartsYAxis,
+  ChartsTooltip,
+  ChartsAxisHighlight,
+} from "@mui/x-charts";
+import {
+  lineElementClasses,
+  markElementClasses,
+} from "@mui/x-charts/LineChart";
 
+import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
+import regression from "regression";
 import * as htmlToImage from "html-to-image";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
@@ -44,6 +60,12 @@ import { Code } from "@mui/icons-material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
+
+import * as science from "science";
+// LOESS function
+const loess = function (xval, yval, bandwidth) {
+  return science.stats.loess().bandwidth(bandwidth)(xval, yval);
+};
 
 const apiBase = "https://hmis.dhis.et/";
 // const apiBase = "https://play.dhis2.org/40.3.0/";
@@ -97,6 +119,20 @@ function DashboardItem(props) {
   const [ouDimension, setOuDimension] = React.useState(); // set ou dimention for loading the shapes
   const [shape, setShape] = React.useState(null);
 
+  // Sample data points
+  const data = [
+    [1, 2],
+    [2, 3],
+    [3, 2.5],
+    [4, 5],
+    [5, 4],
+    // Add more data points as needed
+  ];
+
+  // Polynomial Regression
+  const degree = 2; // Degree of the polynomial
+  const resultPolynomial = regression.polynomial(data, { order: degree });
+
   React.useEffect(() => {
     let item = props?.item;
     let url = apiBase;
@@ -111,7 +147,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -414,10 +450,60 @@ function DashboardItem(props) {
           });
         }
 
-        if (chartType === "line")
+        if (chartType === "line") {
+          //calcualte the trend line for each series
+          let ChartStyle = {
+            [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
+              strokeWidth: 1,
+            },
+            [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]:
+              {
+                fill: "#fff",
+              },
+            [`& .${markElementClasses.highlighted}`]: {
+              stroke: "none",
+            },
+          };
+          if (chartInfo.regressionType != "NONE") {
+            chartConfig?.series?.forEach((series, i) => {
+              const dataPoints = series.data.map((value, index) => [
+                index,
+                value,
+              ]);
+              let regressionResult;
+              if (chartInfo.regressionType == "LINEAR")
+                regressionResult = regression.linear(dataPoints);
+
+              if (chartInfo.regressionType == "POLYNOMIAL")
+                regressionResult = regression.polynomial(dataPoints);
+
+              if (chartInfo.regressionType == "LOESS") {
+                const result = loess(
+                  dataPoints.map((d) => d[0]),
+                  dataPoints.map((d) => d[1]),
+                  0.45
+                );
+                regressionResult = {};
+                regressionResult.points = result.map((e, i) => [i, e]);
+              }
+
+              ChartStyle[`.MuiLineElement-series-trend${i}`] = {
+                strokeDasharray: "3 4 5 2",
+              };
+
+              chartConfig?.series.push({
+                data: regressionResult.points.map((e) => e[1]),
+                label: series.label + " (trend)",
+                type: "line",
+                id: `trend${i}`,
+              });
+            });
+          }
           return (
             <LineChart
+              margin={{ top: 100 }}
               layout="vertical"
+              sx={ChartStyle}
               series={chartConfig.series}
               xAxis={[
                 {
@@ -426,6 +512,7 @@ function DashboardItem(props) {
                   scaleType: "band",
                 },
               ]}
+              margin={{ top: 40 + 30 * chartConfig.series.length }}
             >
               {chartInfo.targetLineValue ? (
                 <ChartsReferenceLine
@@ -452,13 +539,17 @@ function DashboardItem(props) {
               )}
             </LineChart>
           );
+        }
 
         if (chartType === "map")
           return <Map chartConfig={chartConfig} shape={shape} />;
 
-        if (chartType === "bar")
+        if (chartType === "bar") {
           return (
             <BarChart
+              axisHighlight={{
+                y: "line", // Or 'none'
+              }}
               layout="horizontal"
               series={chartConfig.series}
               yAxis={[
@@ -504,44 +595,143 @@ function DashboardItem(props) {
               )}
             </BarChart>
           );
-        else if (chartType === "column") {
-          return (
-            <BarChart
-              layout="vertical"
-              series={chartConfig.series}
-              xAxis={[
-                {
-                  data: chartConfig.yAxis.categories,
-                  barGapRatio: 0.4,
-                  scaleType: "band",
-                },
-              ]}
-            >
-              {chartInfo.targetLineValue ? (
-                <ChartsReferenceLine
-                  lineStyle={{ strokeDasharray: "10 5" }}
-                  labelStyle={{ fontSize: "10" }}
-                  y={chartInfo.targetLineValue}
-                  label={chartInfo.targetLineLabel}
-                  labelAlign="start"
-                />
-              ) : (
-                ""
-              )}
+        } else if (chartType === "column") {
+          //calcualte the trend line for each series
+          let ChartStyle = {
+            [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
+              strokeWidth: 1,
+            },
+            [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]:
+              {
+                fill: "#fff",
+              },
+            [`& .${markElementClasses.highlighted}`]: {
+              stroke: "none",
+            },
+          };
+          if (chartInfo.regressionType != "NONE") {
+            chartConfig?.series?.forEach((series, i) => {
+              chartConfig.series[i].type = "bar";
+              chartConfig.series[i].showMark = false;
 
-              {chartInfo.baseLineValue ? (
-                <ChartsReferenceLine
-                  lineStyle={{ strokeDasharray: "10 5" }}
-                  labelStyle={{ fontSize: "10" }}
-                  y={chartInfo.baseLineValue}
-                  label={chartInfo.baseLineLabel}
-                  labelAlign="start"
-                />
-              ) : (
-                ""
-              )}
-            </BarChart>
-          );
+              const dataPoints = series.data.map((value, index) => [
+                index,
+                value,
+              ]);
+              let regressionResult;
+              if (chartInfo.regressionType == "LINEAR")
+                regressionResult = regression.linear(dataPoints);
+
+              if (chartInfo.regressionType == "POLYNOMIAL")
+                regressionResult = regression.polynomial(dataPoints);
+
+              if (chartInfo.regressionType == "LOESS") {
+                const result = loess(
+                  dataPoints.map((d) => d[0]),
+                  dataPoints.map((d) => d[1]),
+                  0.45
+                );
+                regressionResult = {};
+                regressionResult.points = result.map((e, i) => [i, e]);
+              }
+
+              ChartStyle[`.MuiLineElement-series-trend${i}`] = {
+                strokeDasharray: "3 4 5 2",
+              };
+
+              chartConfig?.series.push({
+                data: regressionResult.points.map((e) => e[1]),
+                label: series.label + " (trend)",
+                type: "line",
+              });
+            });
+            return (
+              <ResponsiveChartContainer
+                xAxis={[
+                  {
+                    data: chartConfig.yAxis.categories,
+                    barGapRatio: 0.4,
+                    scaleType: "band",
+                    id: "x-axis-id",
+                  },
+                ]}
+                series={chartConfig.series}
+                margin={{ top: 40 + 30 * chartConfig.series.length }}
+                sx={ChartStyle}
+              >
+                <BarPlot layout="horizontal" />
+                <LinePlot />
+
+                <ChartsYAxis />
+                <ChartsXAxis />
+                <ChartsAxisHighlight />
+                <ChartsTooltip />
+                <ChartsLegend direction="row" />
+                {chartInfo.targetLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.targetLineValue}
+                    label={chartInfo.targetLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+
+                {chartInfo.baseLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.baseLineValue}
+                    label={chartInfo.baseLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+              </ResponsiveChartContainer>
+            );
+          } else {
+            return (
+              <BarChart
+                layout="vertical"
+                series={chartConfig.series}
+                xAxis={[
+                  {
+                    data: chartConfig.yAxis.categories,
+                    barGapRatio: 0.4,
+                    scaleType: "band",
+                  },
+                ]}
+                margin={{ top: 40 + 30 * chartConfig.series.length }}
+              >
+                {chartInfo.targetLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.targetLineValue}
+                    label={chartInfo.targetLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+
+                {chartInfo.baseLineValue ? (
+                  <ChartsReferenceLine
+                    lineStyle={{ strokeDasharray: "10 5" }}
+                    labelStyle={{ fontSize: "10" }}
+                    y={chartInfo.baseLineValue}
+                    label={chartInfo.baseLineLabel}
+                    labelAlign="start"
+                  />
+                ) : (
+                  ""
+                )}
+              </BarChart>
+            );
+          }
         } else if (chartType == "pivot_table") {
           return (
             <TableContainer>
@@ -754,7 +944,7 @@ function DashboardItem(props) {
                 p: 2,
                 display: "flex",
                 flexDirection: "column",
-                height: "10cm",
+                height: "13cm",
               }
         }
       >

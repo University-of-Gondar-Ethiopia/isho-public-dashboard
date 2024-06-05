@@ -29,6 +29,8 @@
     "react-dom": "latest",
     "react-router-dom": "^6.23.0",
     "react-scripts": "latest",
+    "regression": "^2.0.1",
+    "science": "^1.9.3",
     "xlsx": "^0.18.5"
   },
   "browserslist": {
