@@ -1,8 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { LineChart } from "@mui/x-charts";
-import { Paper, Typography, Box } from "@mui/material";
-import Title from "./Title";
+import { Typography } from "@mui/material";
 import { ChartsReferenceLine } from "@mui/x-charts";
 
 const AreaChartComponent = ({ chartData, chartInfo, item }) => {
@@ -10,7 +9,7 @@ const AreaChartComponent = ({ chartData, chartInfo, item }) => {
   const getChartData = () => {
     const { headers, metaData, rows } = chartData;
 
-    // Debugging logs
+    //
     console.log("chartData:", chartData);
 
     if (!metaData || !rows || rows.length === 0) {
