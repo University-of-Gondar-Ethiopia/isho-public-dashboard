@@ -4,8 +4,13 @@ import { LineChart } from "@mui/x-charts";
 import { Typography } from "@mui/material";
 import { ChartsReferenceLine } from "@mui/x-charts";
 import regression from "regression";
+import * as science from "science";
 
 const AreaChartComponent = ({ chartData, chartInfo, item }) => {
+  const loess = function (xval, yval, bandwidth) {
+    return science.stats.loess().bandwidth(bandwidth)(xval, yval);
+  };
+
   // Extract and transform the data for the AreaChart
   const getChartData = () => {
     const { headers, metaData, rows } = chartData;
@@ -60,14 +65,14 @@ const AreaChartComponent = ({ chartData, chartInfo, item }) => {
       case "LINEAR":
         result = regression.linear(dataPoints);
         break;
-      case "EXPONENTIAL":
-        result = regression.exponential(dataPoints);
-        break;
-      case "LOGARITHMIC":
-        result = regression.logarithmic(dataPoints);
-        break;
-      case "POWER":
-        result = regression.power(dataPoints);
+      case "LOESS":
+        const result_ = loess(
+          dataPoints.map((d) => d[0]),
+          dataPoints.map((d) => d[1]),
+          0.45
+        );
+        result = {};
+        result.points = result_.map((e, i) => [i, e]);
         break;
       case "POLYNOMIAL":
         result = regression.polynomial(dataPoints);
@@ -99,7 +104,7 @@ const AreaChartComponent = ({ chartData, chartInfo, item }) => {
             },
             {
               data: trendData,
-              label : item.visualization.displayName + " Trend",
+              label: item.visualization.displayName + " Trend",
               lineStyle: {
                 stroke: "red",
                 strokeWidth: 2,
