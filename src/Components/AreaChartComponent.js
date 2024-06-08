@@ -1,11 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { LineChart, lineElementClasses, markElementClasses } from "@mui/x-charts";
+import {
+  LineChart,
+  lineElementClasses,
+  markElementClasses,
+} from "@mui/x-charts";
 import { Typography } from "@mui/material";
 import { ChartsReferenceLine } from "@mui/x-charts";
 import regression from "regression";
 import * as science from "science";
-
 
 const AreaChartComponent = ({ chartData, chartInfo }) => {
   const loess = (xval, yval, bandwidth) => {
@@ -25,7 +28,11 @@ const AreaChartComponent = ({ chartData, chartInfo }) => {
     const dataDimensions = metaData.dimensions?.dx || [];
     const valueIndex = headers.findIndex((header) => header.name === "value");
 
-    if (periods.length === 0 || dataDimensions.length === 0 || valueIndex === -1) {
+    if (
+      periods.length === 0 ||
+      dataDimensions.length === 0 ||
+      valueIndex === -1
+    ) {
       return { xData: [], seriesData: [] };
     }
 
@@ -54,7 +61,7 @@ const AreaChartComponent = ({ chartData, chartInfo }) => {
         const result_ = loess(
           dataPoints.map((d) => d[0]),
           dataPoints.map((d) => d[1]),
-          0.45
+          0.3
         );
         result = { points: result_.map((e, i) => [i, e]) };
         break;
@@ -78,15 +85,15 @@ const AreaChartComponent = ({ chartData, chartInfo }) => {
   const formattedSeries = seriesWithTrendData.map((series, index) => ({
     data: series.data,
     label: series.name,
-    area : true,
-    stack : "true",
-    stackOffset: 'none',
+    area: true,
+    stack: "true",
+    stackOffset: "none",
     id: `series-${index}`,
   }));
 
   const formattedTrendSeries = seriesWithTrendData.map((series, index) => ({
     data: series.trendData,
-    label: `${series.name} trend`,
+    label: `${series.name} (Trend)`,
     id: `trend-${index}`,
   }));
 
@@ -101,15 +108,19 @@ const AreaChartComponent = ({ chartData, chartInfo }) => {
             [`.${lineElementClasses.root}, .${markElementClasses.root}`]: {
               strokeWidth: 1,
             },
-            ...formattedTrendSeries.reduce((acc, series) => ({
-              ...acc,
-              [`.MuiLineElement-series-${series.id}`]: {
-                strokeDasharray: "5 5", // Adjust dash pattern as needed
+            ...formattedTrendSeries.reduce(
+              (acc, series) => ({
+                ...acc,
+                [`.MuiLineElement-series-${series.id}`]: {
+                  strokeDasharray: "5 5", // Adjust dash pattern as needed
+                },
+              }),
+              {}
+            ),
+            [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]:
+              {
+                fill: "#fff",
               },
-            }), {}),
-            [`.${markElementClasses.root}:not(.${markElementClasses.highlighted})`]: {
-              fill: "#fff",
-            },
             [`& .${markElementClasses.highlighted}`]: {
               stroke: "none",
             },
