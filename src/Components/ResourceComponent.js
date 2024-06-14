@@ -47,6 +47,8 @@ const ResourceComponent = ({ resourcesItems }) => {
               color: "blue",
               display: "flex",
               alignItems: "center",
+              position: 'relative',
+              transition: 'top 0.1s ease-in-out',
               gap: 1,
               transition: "all 0.01s ease", 
               "&:hover": {
@@ -54,7 +56,7 @@ const ResourceComponent = ({ resourcesItems }) => {
                 textDecoration: "underline",
               },
               "&:active": {
-                transform: "scale(0.9)", 
+                top: '2px', 
               },
             }}
           >
