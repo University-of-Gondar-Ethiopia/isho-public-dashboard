@@ -60,6 +60,8 @@ import { Code } from "@mui/icons-material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import TextChart from "./TextChart";
+import ResourceComponent from "./ResourceComponent";
 
 import * as science from "science";
 // LOESS function
@@ -112,6 +114,7 @@ const getItemName = function (obj, key) {
 };
 
 function DashboardItem(props) {
+  console.log("dashboardItemProps", props)
   const [chartInfo, setChartInfo] = React.useState();
   const [chartData, setChartData] = React.useState();
   const [loading, setLoading] = React.useState(true);
@@ -166,7 +169,13 @@ function DashboardItem(props) {
         "api/maps/" +
         id +
         ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
-    } else {
+    } else if (item.type == "TEXT"){
+        setChartInfo({...item});
+        setLoading(false);
+    }else if(item.type == "RESOURCES"){
+        setChartInfo({...item});
+        setLoading(false)
+    }else {
       setChartInfo(null);
       return;
     }
@@ -280,7 +289,6 @@ function DashboardItem(props) {
             data.programStage.id +
             "&";
         } else {
-          console.log("unsuported chart type: " + item.type);
           setChartData(null);
           return;
         }
@@ -360,19 +368,26 @@ function DashboardItem(props) {
   };
 
   const renderChart = () => {
-    if (!chartData) return <span style={{ color: "#DDD" }}>No Data</span>;
+    console.log("chartInfo", chartInfo)
+    if (chartType == "resources"){
+      return <ResourceComponent resourcesItems={chartInfo.resources}/>
+    }
+    if (chartType === "text") return <TextChart item={item} />;
+
+    if (!chartData) {
+      return <span style={{ color: "#DDD" }}>No Data</span>};
 
     if (chartData.status) {
       return <Code>{JSON.stringify(chartData)}</Code>;
     }
-
-    console.log(chartData, chartInfo, "here", item);
 
     const rows = chartData.rows?.toSorted((a, b) => {
       let avalue = Number(a.length > 1 ? a[1] : a[0]);
       let bvalue = Number(b.length > 1 ? b[1] : b[0]);
       return avalue - bvalue;
     });
+
+   
 
     if (chartType === "pie") {
       chartConfig = {
@@ -544,6 +559,8 @@ function DashboardItem(props) {
         if (chartType === "map")
           return <Map chartConfig={chartConfig} shape={shape} />;
 
+        if (chartType === "text")
+          return <TextChart item = {item} />;
         if (chartType === "bar") {
           return (
             <BarChart
@@ -811,7 +828,8 @@ function DashboardItem(props) {
           />
         </>
       );
-    } else {
+    }
+    else {
       console.log("Unsupported chart type: " + chartType);
       return (
         <span style={{ color: "#DDD" }}>
