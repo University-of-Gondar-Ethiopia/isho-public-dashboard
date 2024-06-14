@@ -20,7 +20,7 @@ function createData(time, amount) {
 const apiBase = "https://hmis.dhis.et/";
 const url =
   apiBase +
-  "api/dashboards.json?paging=false&fields=id,name,dashboardItems[id,type,shape,x,y,width,height,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
+  "api/dashboards.json?paging=false&fields=id,name,dashboardItems[id,resources[id, name],type,shape,x,y,width,height,text,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
 
 export default function Chart({
   savedReports,
