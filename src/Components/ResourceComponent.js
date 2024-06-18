@@ -1,5 +1,5 @@
 import React from "react";
-import { Description, Margin } from "@mui/icons-material";
+import { Description } from "@mui/icons-material";
 import { Box } from "@mui/material";
 
 const ResourceComponent = ({ resourcesItems }) => {
@@ -34,7 +34,6 @@ const ResourceComponent = ({ resourcesItems }) => {
   };
 
   const items = resourcesItems;
-  console.log("item resource", items);
   return (
     <div>
       {items.map((item) => {
@@ -47,16 +46,16 @@ const ResourceComponent = ({ resourcesItems }) => {
               color: "blue",
               display: "flex",
               alignItems: "center",
-              position: 'relative',
-              transition: 'top 0.1s ease-in-out',
+              position: "relative",
+              transition: "top 0.1s ease-in-out",
               gap: 1,
-              transition: "all 0.01s ease", 
+              transition: "all 0.01s ease",
               "&:hover": {
                 fontWeight: "bold",
                 textDecoration: "underline",
               },
               "&:active": {
-                top: '2px', 
+                top: "2px",
               },
             }}
           >

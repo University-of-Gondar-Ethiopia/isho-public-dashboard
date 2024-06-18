@@ -37,7 +37,7 @@ export default function Chart({
   //load the list of charts
   React.useEffect(() => {
     fetch(encodeURI(url))
-      .then((data) => data.json())
+      .then((response) => response.json())
       .then((data) => {
         setDashboards(data?.dashboards);
         setLoading(false);
@@ -65,6 +65,7 @@ export default function Chart({
       </MenuItem>
     ));
   };
+  console.log("chart_dashboarditems", dashboards);
 
   return (
     <React.Fragment>
