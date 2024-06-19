@@ -15,7 +15,6 @@ const ResourceComponent = ({ resourcesItems }) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
-        console.log("responses", response);
         const fileName = name;
 
         return response.blob().then((blob) => ({ blob, fileName }));

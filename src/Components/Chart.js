@@ -70,7 +70,6 @@ export default function Chart({
     );
     setDashbaord(dashboard);
     setSelectedSavedChart(null);
-    console.log("selected dashboard", dashboard, dashboards);
   };
 
   const dashboardMenuList = () => {
@@ -80,8 +79,6 @@ export default function Chart({
       </MenuItem>
     ));
   };
-
-  console.log("chart_dashboarditems", dashboards);
 
   return (
     <React.Fragment>
