@@ -114,7 +114,6 @@ const getItemName = function (obj, key) {
 };
 
 function DashboardItem(props) {
-  console.log("dashboardItemProps", props)
   const [chartInfo, setChartInfo] = React.useState();
   const [chartData, setChartData] = React.useState();
   const [loading, setLoading] = React.useState(true);
@@ -169,13 +168,17 @@ function DashboardItem(props) {
         "api/maps/" +
         id +
         ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
-    } else if (item.type == "TEXT"){
-        setChartInfo({...item});
-        setLoading(false);
-    }else if(item.type == "RESOURCES"){
-        setChartInfo({...item});
-        setLoading(false)
-    }else {
+    } else if (item.type == "TEXT") {
+      id = item._id;
+      setChartInfo({ ...item });
+      setLoading(false);
+      return;
+    } else if (item.type == "RESOURCES") {
+      id = item._id;
+      setChartInfo({ ...item });
+      setLoading(false);
+      return;
+    } else {
       setChartInfo(null);
       return;
     }
@@ -368,14 +371,14 @@ function DashboardItem(props) {
   };
 
   const renderChart = () => {
-    console.log("chartInfo", chartInfo)
-    if (chartType == "resources"){
-      return <ResourceComponent resourcesItems={chartInfo.resources}/>
+    if (chartType == "resources") {
+      return <ResourceComponent resourcesItems={chartInfo.resources} />;
     }
     if (chartType === "text") return <TextChart item={item} />;
 
     if (!chartData) {
-      return <span style={{ color: "#DDD" }}>No Data</span>};
+      return <span style={{ color: "#DDD" }}>No Data</span>;
+    }
 
     if (chartData.status) {
       return <Code>{JSON.stringify(chartData)}</Code>;
@@ -386,8 +389,6 @@ function DashboardItem(props) {
       let bvalue = Number(b.length > 1 ? b[1] : b[0]);
       return avalue - bvalue;
     });
-
-   
 
     if (chartType === "pie") {
       chartConfig = {
@@ -559,8 +560,7 @@ function DashboardItem(props) {
         if (chartType === "map")
           return <Map chartConfig={chartConfig} shape={shape} />;
 
-        if (chartType === "text")
-          return <TextChart item = {item} />;
+        if (chartType === "text") return <TextChart item={item} />;
         if (chartType === "bar") {
           return (
             <BarChart
@@ -828,8 +828,7 @@ function DashboardItem(props) {
           />
         </>
       );
-    }
-    else {
+    } else {
       console.log("Unsupported chart type: " + chartType);
       return (
         <span style={{ color: "#DDD" }}>
@@ -1073,9 +1072,16 @@ function DashboardItem(props) {
 }
 
 function DashboardItems(props) {
+  if (props?.items?.length == 0) {
+    return <div>Empty Dashboard</div>;
+  }
   return props?.items?.map((item, i) => {
     return (
-      <DashboardItem {...props} key={item.id + i} item={item}></DashboardItem>
+      <DashboardItem
+        {...props}
+        key={item.id ?? item._id + i}
+        item={{ ...item, id: item.id ?? item._id }}
+      ></DashboardItem>
     );
   });
 }
