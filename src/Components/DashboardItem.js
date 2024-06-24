@@ -12,6 +12,7 @@ import {
   ChartsLegend,
   ChartsYAxis,
   ChartsTooltip,
+  MarkPlot,
   ChartsAxisHighlight,
 } from "@mui/x-charts";
 import {
@@ -140,6 +141,7 @@ function DashboardItem(props) {
     let url = apiBase;
     let id = "";
 
+    console.log(item, "item");
     if (
       item.type === "VISUALIZATION" ||
       item.type === "CHART" ||
@@ -678,7 +680,7 @@ function DashboardItem(props) {
               >
                 <BarPlot layout="horizontal" />
                 <LinePlot />
-
+                <MarkPlot showMark={(point) => point} />
                 <ChartsYAxis />
                 <ChartsXAxis />
                 <ChartsAxisHighlight />
@@ -827,6 +829,31 @@ function DashboardItem(props) {
             item={item}
           />
         </>
+      );
+    } else if (chartInfo.type == "SINGLE_VALUE") {
+      let title = chartData.metaData.items[chartData.rows[0][0]].name;
+      return (
+        <div
+          style={{
+            minHeight: "100%",
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
+        >
+          <Typography
+            display="flex"
+            alignItems="center"
+            component="div"
+            variant="h1"
+            color="primary"
+          >
+            {chartData.rows[0][1] + "%"}
+          </Typography>
+
+          <Typography>{title}</Typography>
+        </div>
       );
     } else {
       console.log("Unsupported chart type: " + chartType);
