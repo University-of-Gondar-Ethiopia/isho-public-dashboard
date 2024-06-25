@@ -37,9 +37,20 @@ export default function Chart({
   //load the list of charts
   React.useEffect(() => {
     fetch(encodeURI(url))
-      .then((response) => response.json())
+      .then((response) => {
+        return response.text();
+      })
       .then((data) => {
-        setDashboards(data?.dashboards);
+        let jsonData = JSON.parse(data);
+        let dashbaords_json = jsonData.dashboards.map((_dashboard) => {
+          return {
+            ..._dashboard,
+            dashboardItems: _dashboard.dashboardItems.map((item) => {
+              return { ...item, _id: item.id };
+            }),
+          };
+        });
+        setDashboards(dashbaords_json);
         setLoading(false);
       })
       .catch(() => {
@@ -54,18 +65,20 @@ export default function Chart({
   }, []);
 
   const handleChartChange = (data) => {
-    setDashbaord(data.target.value);
+    let dashboard = dashboards.find(
+      (dashboard) => dashboard.id === data.target.value
+    );
+    setDashbaord(dashboard);
     setSelectedSavedChart(null);
   };
 
   const dashboardMenuList = () => {
     return dashboards.map((dashboard) => (
-      <MenuItem key={dashboard.id} value={dashboard}>
+      <MenuItem key={dashboard.id} value={dashboard.id}>
         {dashboard.name}
       </MenuItem>
     ));
   };
-  console.log("chart_dashboarditems", dashboards);
 
   return (
     <React.Fragment>
@@ -85,7 +98,7 @@ export default function Chart({
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={dashboard}
+              value={dashboard?.id}
               label="Select Dashboard"
               onChange={handleChartChange}
             >

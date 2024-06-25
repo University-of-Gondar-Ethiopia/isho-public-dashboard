@@ -80,7 +80,8 @@ function SecondaryListItems({
             </ListItemIcon>
             <ListItemText
               primary={truncateText(
-                report[report.type.toLowerCase()]?.displayName,
+                report[report?.type?.toLowerCase()]?.displayName ??
+                  "Unnamed dashboard item ",
                 12
               )}
             />

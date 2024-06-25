@@ -114,7 +114,6 @@ const getItemName = function (obj, key) {
 };
 
 function DashboardItem(props) {
-  // console.log("dashboardItemProps", props)
   const [chartInfo, setChartInfo] = React.useState();
   const [chartData, setChartData] = React.useState();
   const [loading, setLoading] = React.useState(true);
@@ -170,10 +169,12 @@ function DashboardItem(props) {
         id +
         ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
     } else if (item.type == "TEXT") {
+      id = item._id;
       setChartInfo({ ...item });
       setLoading(false);
       return;
     } else if (item.type == "RESOURCES") {
+      id = item._id;
       setChartInfo({ ...item });
       setLoading(false);
       return;
@@ -1071,20 +1072,17 @@ function DashboardItem(props) {
 }
 
 function DashboardItems(props) {
+  if (props?.items?.length == 0) {
+    return <div>Empty Dashboard</div>;
+  }
   return props?.items?.map((item, i) => {
-    if (item.type == "TEXT" || item.type == "RESOURCES") {
-      return (
-        <DashboardItem
-          {...props}
-          key={item.x + "" + item.y}
-          item={item}
-        ></DashboardItem>
-      );
-    } else {
-      return (
-        <DashboardItem {...props} key={item.id + i} item={item}></DashboardItem>
-      );
-    }
+    return (
+      <DashboardItem
+        {...props}
+        key={item.id ?? item._id + i}
+        item={{ ...item, id: item.id ?? item._id }}
+      ></DashboardItem>
+    );
   });
 }
 
