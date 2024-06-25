@@ -20,6 +20,9 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import { mainListItems } from "./listItems";
 import Chart from "./Chart";
 import SecondaryListItems from "./SecondaryListItems";
+import OrgUnitFilter from "./OrgUnitFilter";
+import { Button } from "@mui/material";
+import OrgUnitFilterModal from "./OrgUnitFilterModal";
 
 function Copyright(props) {
   return (
@@ -28,7 +31,18 @@ function Copyright(props) {
       color="text.secondary"
       align="center"
       {...props}
-    >
+    > 
+
+      <OrgUnitFilterModal />
+      {/* <Button
+        variant="outlined"
+        
+        color="primary"
+        onClick={() => {
+          <OrgUnitFilter />
+        }}
+      > OrgUnitFilter</Button> */}
+      {/* <OrgUnitFilter /> */}
       {/* <AreaChart /> */}
       {"Copyright © "}
       <Link color="inherit" href="https://habtechsolution.com/">
