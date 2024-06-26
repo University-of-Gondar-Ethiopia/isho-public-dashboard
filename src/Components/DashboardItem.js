@@ -63,6 +63,7 @@ import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
+import ScatterChartComponent from "./ScatterChartComponent";
 
 import * as science from "science";
 // LOESS function
@@ -151,7 +152,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -430,7 +431,8 @@ function DashboardItem(props) {
       chartType === "bar" ||
       chartType === "pivot_table" ||
       chartType === "gauge" ||
-      chartType == "map"
+      chartType == "map" ||
+      chartType == "scatter"
     ) {
       chartConfig = { series: [] };
       chartConfig.plotOptions = {
@@ -829,6 +831,15 @@ function DashboardItem(props) {
             item={item}
           />
         </>
+      );
+    } else if (chartInfo.type == "SCATTER") {
+      return (
+        <ScatterChartComponent
+          chartData={chartData}
+          chartInfo={chartInfo}
+          item={item}
+          chartConfig={chartConfig}
+        />
       );
     } else if (chartInfo.type == "SINGLE_VALUE") {
       let title = chartData.metaData.items[chartData.rows[0][0]].name;
