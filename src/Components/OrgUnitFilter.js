@@ -1,8 +1,18 @@
 import React, { useState } from "react";
-import { Box, Checkbox, CircularProgress, Typography } from "@mui/material";
+import {
+  Box,
+  Checkbox,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from "@mui/material";
 import { SimpleTreeView, TreeItem, treeItemClasses } from "@mui/x-tree-view";
 import { styled, alpha } from "@mui/material/styles";
 import FolderIcon from "@mui/icons-material/Folder";
+import LevelGroupOrgUnitFilter from "./LevelGroupOrgUnitFilter";
 
 const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
   [`& .${treeItemClasses.content}`]: {
@@ -46,7 +56,6 @@ const OrgUnitFilter = (props) => {
     const paths = updatedData.path.split("/").slice(2);
     const newData = updateData(paths, updatedData);
     setData(newData);
-    console.log("newChildren", newData);
   };
 
   const updateData = (path, updatedData) => {
@@ -140,6 +149,10 @@ const OrgUnitFilter = (props) => {
       >
         {renderTree(data)}
       </SimpleTreeView>
+      <LevelGroupOrgUnitFilter
+        orgUnitGroups={props.orgUnitGroups}
+        orgUnitLevels={props.orgUnitLevels}
+      />
     </Box>
   );
 };

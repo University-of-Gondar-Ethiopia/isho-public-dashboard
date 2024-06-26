@@ -10,7 +10,10 @@ import { Typography, Box, CircularProgress } from "@mui/material";
 const OrgUnitFilterModal = () => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(null);
+  const [orgUnitGroups, setOrgUnitGroups] = useState([]);
+  const [orgUnitLevels, setOrgUnitLevels] = useState([]);
   const apiBase = "https://hmis.dhis.et/";
+
 
   const fetchData = async () => {
     const url = `${apiBase}api/40/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
@@ -19,11 +22,33 @@ const OrgUnitFilterModal = () => {
       throw new Error("Failed to fetch data");
     }
     const fetchedData = await response.json();
-    console.log("fetched data_", fetchedData);
     const updatedData = await hasChildren(fetchedData.children);
-    console.log("fetched data", updatedData);
     setData({ ...fetchedData, children: updatedData });
   };
+
+  const fetchOrgUnitGroups = async () => {
+    const url = `${apiBase}api/organisationUnitGroups?paging=false`
+    const response = await fetch(url);
+    if (!response.ok){
+      throw new Error("Failed to fetch data")
+    }
+
+    const data = await response.json();
+    setOrgUnitGroups(data.organisationUnitGroups);
+   
+  }
+
+  const fetchOrgUnitLevels = async() => {
+    const url = `${apiBase}api/organisationUnitLevels?paging=false`;
+    const response = await fetch(url);
+    if (!response.ok){
+      throw new Error("Failed to fetch data")
+    }
+
+    const data = await response.json();
+    setOrgUnitLevels(data.organisationUnitLevels);
+    
+  }
 
   const hasChildren = async (nodes) => {
     for (const node of nodes) {
@@ -42,6 +67,8 @@ const OrgUnitFilterModal = () => {
 
   const handleClickOpen = () => {
     fetchData();
+    fetchOrgUnitGroups();
+    fetchOrgUnitLevels();
     setOpen(true);
   };
 
@@ -63,7 +90,7 @@ const OrgUnitFilterModal = () => {
         </DialogTitle>
         <DialogContent dividers>
           {data ? (
-            <OrgUnitFilter data={data} />
+            <OrgUnitFilter data={data} orgUnitGroups={orgUnitGroups} orgUnitLevels={orgUnitLevels}/>
           ) : (
             <CircularProgress size={24} />
           )}
