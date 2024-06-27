@@ -1,12 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Box,
   Checkbox,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
   Typography,
 } from "@mui/material";
 import { SimpleTreeView, TreeItem, treeItemClasses } from "@mui/x-tree-view";
@@ -37,13 +33,24 @@ const OrgUnitFilter = (props) => {
   const [data, setData] = useState({ ...props.data });
   const apiBase = "https://hmis.dhis.et/";
 
+  // cache object to store fetched data
+  const dataCache = useMemo(() => ({}), []);
+
   const fetchData = async (nodeId) => {
+    if (dataCache[nodeId]) {
+      return dataCache[nodeId];
+    }
+
+    console.log("fetching...")
+
     const url = `${apiBase}api/40/organisationUnits/${nodeId}?fields=displayName,path,id,children%5Bid%2Cpath%2CdisplayName%5D`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error("Failed to fetch data");
     }
-    return await response.json();
+    const fetchedData = await response.json();
+    dataCache[nodeId] = fetchedData; // Cache the fetched data
+    return fetchedData;
   };
 
   const handleToggle = async (event, nodeIds) => {
