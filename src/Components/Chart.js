@@ -42,7 +42,7 @@ export default function Chart({
       })
       .then((data) => {
         let jsonData = JSON.parse(data);
-        let dashbaords_json = jsonData.dashboards.map((_dashboard) => {
+        let dashboards_json = jsonData.dashboards.map((_dashboard) => {
           return {
             ..._dashboard,
             dashboardItems: _dashboard.dashboardItems.map((item) => {
@@ -50,8 +50,17 @@ export default function Chart({
             }),
           };
         });
-        setDashboards(dashbaords_json);
+        setDashboards(dashboards_json);
         setLoading(false);
+        const params = new URLSearchParams(window.location.search);
+        const dashboardId = params.get('dashboard');
+        if (dashboardId) {
+          const selectedDashboard = dashboards_json.find(d => d.id === dashboardId);
+          if (selectedDashboard) {
+            console.log("selected_dashboard",selectedDashboard)
+            setDashbaord(selectedDashboard);
+          }
+        }
       })
       .catch(() => {
         snackbar.showMessage(
@@ -70,6 +79,9 @@ export default function Chart({
     );
     setDashbaord(dashboard);
     setSelectedSavedChart(null);
+    
+    const newUrl = `${window.location.origin}${window.location.pathname}?dashboard=${dashboard.id}`
+    window.history.pushState({ path: newUrl }, '', newUrl);
   };
 
   const dashboardMenuList = () => {
@@ -93,7 +105,7 @@ export default function Chart({
         >
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">
-              Select Dashboard
+             {dashboard?.name || "Select Dashboard"}
             </InputLabel>
             <Select
               labelId="demo-simple-select-label"
