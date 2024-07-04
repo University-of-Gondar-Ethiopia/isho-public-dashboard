@@ -4,8 +4,12 @@ import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 const LevelGroupOrgUnitFilter = (props) => {
   const orgUnitGroups = props.orgUnitGroups;
   const orgUnitLevels = props.orgUnitLevels;
-  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState("");
-  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState("");
+  const {
+    selectedOrgUnitGroup,
+    setSelectedOrgUnitGroup,
+    selectedOrgUnitLevel,
+    setSelectedOrgUnitLevel,
+  } = props;
 
   const renderOrgUnitGroups = () => {
     return orgUnitGroups.map((group) => {

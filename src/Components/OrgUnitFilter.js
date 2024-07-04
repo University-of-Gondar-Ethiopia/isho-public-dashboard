@@ -1,10 +1,5 @@
 import React, { useState, useMemo } from "react";
-import {
-  Box,
-  Checkbox,
-  CircularProgress,
-  Typography,
-} from "@mui/material";
+import { Box, Checkbox, CircularProgress, Typography } from "@mui/material";
 import { SimpleTreeView, TreeItem, treeItemClasses } from "@mui/x-tree-view";
 import { styled, alpha } from "@mui/material/styles";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -29,7 +24,7 @@ const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
 
 const OrgUnitFilter = (props) => {
   const [expanded, setExpanded] = useState([]);
-  const [selected, setSelected] = useState([]);
+  const { selected, setSelected } = props;
   const [data, setData] = useState({ ...props.data });
   const apiBase = "https://hmis.dhis.et/";
 
@@ -41,9 +36,9 @@ const OrgUnitFilter = (props) => {
       return dataCache[nodeId];
     }
 
-    console.log("fetching...")
+    console.log("fetching...");
 
-    const url = `${apiBase}api/40/organisationUnits/${nodeId}?fields=displayName,path,id,children%5Bid%2Cpath%2CdisplayName%5D`;
+    const url = `${apiBase}api/organisationUnits/${nodeId}?fields=displayName,path,id,children%5Bid%2Cpath%2CdisplayName%5D`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error("Failed to fetch data");
@@ -94,7 +89,7 @@ const OrgUnitFilter = (props) => {
 
   const hasChildren = async (nodes) => {
     for (const node of nodes) {
-      const urlChildren = `${apiBase}api/40/organisationUnits/${node.id}?fields=path,children%3A%3Asize`;
+      const urlChildren = `${apiBase}api/organisationUnits/${node.id}?fields=path,children%3A%3Asize`;
       const response = await fetch(urlChildren);
       if (!response.ok) {
         throw new Error("Failed to fetch data");
@@ -159,6 +154,10 @@ const OrgUnitFilter = (props) => {
       <LevelGroupOrgUnitFilter
         orgUnitGroups={props.orgUnitGroups}
         orgUnitLevels={props.orgUnitLevels}
+        selectedOrgUnitGroup={props.selectedOrgUnitGroup}
+        selectedOrgUnitLevel={props.selectedOrgUnitLevel}
+        setSelectedOrgUnitGroup={props.setSelectedOrgUnitGroup}
+        setSelectedOrgUnitLevel={props.setSelectedOrgUnitLevel}
       />
     </Box>
   );
