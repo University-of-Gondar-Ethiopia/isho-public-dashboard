@@ -56,7 +56,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import GaugeChart from "../lib";
-import { Code } from "@mui/icons-material";
+import { Code, Share } from "@mui/icons-material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
@@ -64,6 +64,7 @@ import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
 
 import * as science from "science";
+import ShareModal from "./ShareModal";
 // LOESS function
 const loess = function (xval, yval, bandwidth) {
   return science.stats.loess().bandwidth(bandwidth)(xval, yval);
@@ -936,6 +937,17 @@ function DashboardItem(props) {
   };
   const popover_id = Boolean(subMenuAnchorEl) ? "simple-popover" : undefined;
 
+  const [selectShare, setSelectShare] = React.useState(false);
+  const [shareURL, setShareURL] = React.useState("");
+  const handleShare = () => {
+    const currentURL = window.location.href;
+    const shareURL = `${currentURL}&dashboardItemId=${item.id}`;
+    setSelectShare(true);
+    setShareURL(shareURL);
+
+    return <ShareModal />;
+  };
+
   return (
     <Grid item xs={12} md={6} lg={6}>
       <Paper
@@ -1013,6 +1025,12 @@ function DashboardItem(props) {
                 </ListItemIcon>
                 <ListItemText primary="Save" />
               </MenuItem>
+              <MenuItem onClick={handleShare}>
+                <ListItemIcon>
+                  <Share />
+                </ListItemIcon>
+                <ListItemText primary="Share" />
+              </MenuItem>
 
               <MenuItem>
                 <ListItemIcon>
@@ -1065,6 +1083,13 @@ function DashboardItem(props) {
           </MenuItem>
         ) : (
           renderChart()
+        )}
+        {selectShare && (
+          <ShareModal
+            open={selectShare}
+            onClose={() => setSelectShare(false)}
+            url={shareURL}
+          />
         )}
       </Paper>
     </Grid>
