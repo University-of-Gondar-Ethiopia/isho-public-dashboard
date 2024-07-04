@@ -67,6 +67,7 @@ import ScatterChartComponent from "./ScatterChartComponent";
 
 import * as science from "science";
 import ShareModal from "./ShareModal";
+import { filter } from "d3";
 // LOESS function
 const loess = function (xval, yval, bandwidth) {
   return science.stats.loess().bandwidth(bandwidth)(xval, yval);
@@ -187,20 +188,33 @@ function DashboardItem(props) {
 
         let dimension = "",
           filters = "";
+        if (!props?.filters) {
+          for (const filter of data.filters) {
+            filters += "&filter=" + filter.dimension;
+            if (filter.items.length > 0) {
+              let filterItemsId = getObjectItems(filter, "id");
 
-        for (const filter of data.filters) {
-          filters += "&filter=" + filter.dimension;
-          if (filter.items.length > 0) {
-            let filterItemsId = getObjectItems(filter, "id");
-
-            let filterDimensionItems = getObjectItems(filter, "dimensionItem");
-            if (filterItemsId.length > 0) {
-              filters += ":" + filterItemsId.join(";");
-            }
-            if (filterDimensionItems.length > 0) {
-              filters += ":" + filterDimensionItems.join(";");
+              let filterDimensionItems = getObjectItems(
+                filter,
+                "dimensionItem"
+              );
+              if (filterItemsId.length > 0) {
+                filters += ":" + filterItemsId.join(";");
+              }
+              if (filterDimensionItems.length > 0) {
+                filters += ":" + filterDimensionItems.join(";");
+              }
             }
           }
+        } else {
+          filters += "&filter=ou:";
+          if (props?.filters.orgunitGroup) {
+            filters += "OU-GROUP:" + props?.filters.orgunitGroup + ";";
+          }
+          if (props?.filters.orgunitLevel) {
+            filters += "LEVEL-:" + props?.filters.orgunitLevel + ";";
+          }
+          filters += props?.filters.orgunits.map((ou) => ou + ";");
         }
 
         for (const col of data.columns) {
@@ -306,7 +320,7 @@ function DashboardItem(props) {
         });
         setLoading(false);
       });
-  }, []);
+  }, [props.filters]);
 
   const type = props?.item?.type.toLowerCase();
   const title = props?.item[type]?.displayName;
