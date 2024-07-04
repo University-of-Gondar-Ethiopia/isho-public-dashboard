@@ -124,20 +124,6 @@ function DashboardItem(props) {
   const [ouDimension, setOuDimension] = React.useState(); // set ou dimention for loading the shapes
   const [shape, setShape] = React.useState(null);
 
-  // Sample data points
-  const data = [
-    [1, 2],
-    [2, 3],
-    [3, 2.5],
-    [4, 5],
-    [5, 4],
-    // Add more data points as needed
-  ];
-
-  // Polynomial Regression
-  const degree = 2; // Degree of the polynomial
-  const resultPolynomial = regression.polynomial(data, { order: degree });
-
   React.useEffect(() => {
     let item = props?.item;
     let url = apiBase;
@@ -836,6 +822,7 @@ function DashboardItem(props) {
     } else if (chartInfo.type == "SCATTER") {
       return (
         <ScatterChartComponent
+          key={item._id}
           chartData={chartData}
           chartInfo={chartInfo}
           item={item}
