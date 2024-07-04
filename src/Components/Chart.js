@@ -54,12 +54,24 @@ export default function Chart({
         setLoading(false);
         const params = new URLSearchParams(window.location.search);
         const dashboardId = params.get("dashboard");
+        const dashboardItemId = params.get("dashboardItemId");
+
         if (dashboardId) {
           const selectedDashboard = dashboards_json.find(
             (d) => d.id === dashboardId
           );
-          if (selectedDashboard) {
-            console.log("selected_dashboard", selectedDashboard);
+          if (selectedDashboard && dashboardItemId) {
+            const selectedDashboardItem = selectedDashboard.dashboardItems.find(
+              (d) =>
+                d._id === dashboardItemId ||
+                d[d.type.toLowerCase()].id === dashboardItemId
+            );
+
+            setDashbaord({
+              ...selectedDashboard,
+              dashboardItems: [selectedDashboardItem],
+            });
+          } else if (selectedDashboard) {
             setDashbaord(selectedDashboard);
           }
         }
