@@ -12,6 +12,7 @@ import {
   ChartsLegend,
   ChartsYAxis,
   ChartsTooltip,
+  MarkPlot,
   ChartsAxisHighlight,
 } from "@mui/x-charts";
 import {
@@ -62,6 +63,7 @@ import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
+import ScatterChartComponent from "./ScatterChartComponent";
 
 import * as science from "science";
 import ShareModal from "./ShareModal";
@@ -141,6 +143,7 @@ function DashboardItem(props) {
     let url = apiBase;
     let id = "";
 
+    console.log(item, "item");
     if (
       item.type === "VISUALIZATION" ||
       item.type === "CHART" ||
@@ -150,7 +153,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -429,7 +432,8 @@ function DashboardItem(props) {
       chartType === "bar" ||
       chartType === "pivot_table" ||
       chartType === "gauge" ||
-      chartType == "map"
+      chartType == "map" ||
+      chartType == "scatter"
     ) {
       chartConfig = { series: [] };
       chartConfig.plotOptions = {
@@ -679,7 +683,7 @@ function DashboardItem(props) {
               >
                 <BarPlot layout="horizontal" />
                 <LinePlot />
-
+                <MarkPlot showMark={(point) => point} />
                 <ChartsYAxis />
                 <ChartsXAxis />
                 <ChartsAxisHighlight />
@@ -828,6 +832,40 @@ function DashboardItem(props) {
             item={item}
           />
         </>
+      );
+    } else if (chartInfo.type == "SCATTER") {
+      return (
+        <ScatterChartComponent
+          chartData={chartData}
+          chartInfo={chartInfo}
+          item={item}
+          chartConfig={chartConfig}
+        />
+      );
+    } else if (chartInfo.type == "SINGLE_VALUE") {
+      let title = chartData.metaData.items[chartData.rows[0][0]].name;
+      return (
+        <div
+          style={{
+            minHeight: "100%",
+            alignItems: "center",
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}
+        >
+          <Typography
+            display="flex"
+            alignItems="center"
+            component="div"
+            variant="h1"
+            color="primary"
+          >
+            {chartData.rows[0][1] + "%"}
+          </Typography>
+
+          <Typography>{title}</Typography>
+        </div>
       );
     } else {
       console.log("Unsupported chart type: " + chartType);

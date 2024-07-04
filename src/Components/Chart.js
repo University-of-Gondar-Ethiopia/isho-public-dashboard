@@ -56,12 +56,10 @@ export default function Chart({
         const dashboardId = params.get("dashboard");
         const dashboardItemId = params.get("dashboardItemId");
 
-        console.log("dashboardItemId", dashboardItemId);
         if (dashboardId) {
           const selectedDashboard = dashboards_json.find(
             (d) => d.id === dashboardId
           );
-          console.log("selectedDashboard", selectedDashboard);
           if (selectedDashboard && dashboardItemId) {
             const selectedDashboardItem = selectedDashboard.dashboardItems.find(
               (d) =>
@@ -121,7 +119,7 @@ export default function Chart({
         >
           <FormControl fullWidth>
             <InputLabel id="demo-simple-select-label">
-              Select Dashboard
+              {"Select Dashboard"}
             </InputLabel>
             <Select
               labelId="demo-simple-select-label"
