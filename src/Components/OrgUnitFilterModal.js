@@ -81,7 +81,13 @@ const OrgUnitFilterModal = () => {
       <Button variant="outlined" color="primary" onClick={handleClickOpen}>
         OrgUnitFilter
       </Button>
-      <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
+      <Dialog
+        sx={{ minHeight: "50vh", padding: "10px" }}
+        open={open}
+        onClose={handleClose}
+        fullWidth
+        maxWidth="md"
+      >
         <DialogTitle>
           <Typography
             sx={{ padding: "10px", fontWeight: "bold", fontSize: "1.2rem" }}
@@ -89,7 +95,7 @@ const OrgUnitFilterModal = () => {
             Organization Unit
           </Typography>
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent sx={{ minHeight: "50vh", padding: "10px" }} dividers>
           {data ? (
             <OrgUnitFilter
               data={data}
