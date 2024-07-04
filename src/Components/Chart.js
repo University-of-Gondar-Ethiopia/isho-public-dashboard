@@ -64,7 +64,9 @@ export default function Chart({
           console.log("selectedDashboard", selectedDashboard);
           if (selectedDashboard && dashboardItemId) {
             const selectedDashboardItem = selectedDashboard.dashboardItems.find(
-              (d) => d[d.type.toLowerCase()].id === dashboardItemId
+              (d) =>
+                d._id === dashboardItemId ||
+                d[d.type.toLowerCase()].id === dashboardItemId
             );
 
             setDashbaord({

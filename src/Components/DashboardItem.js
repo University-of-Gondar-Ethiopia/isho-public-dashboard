@@ -941,11 +941,15 @@ function DashboardItem(props) {
   const [shareURL, setShareURL] = React.useState("");
   const handleShare = () => {
     const currentURL = window.location.href;
-    const shareURL = `${currentURL}&dashboardItemId=${item.id}`;
+    let shareURL;
+    if (item.id) {
+      shareURL = `${currentURL}&dashboardItemId=${item.id}`;
+    } else {
+      shareURL = `${currentURL}&dashboardItemId=${item._id}`;
+    }
     setSelectShare(true);
     setShareURL(shareURL);
-
-    return <ShareModal />;
+    // return <ShareModal />;
   };
 
   return (
