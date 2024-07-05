@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Box, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import {
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Checkbox,
+  ListItemText,
+} from "@mui/material";
 
 const LevelGroupOrgUnitFilter = (props) => {
   const orgUnitGroups = props.orgUnitGroups;
@@ -11,11 +19,16 @@ const LevelGroupOrgUnitFilter = (props) => {
     setSelectedOrgUnitLevel,
   } = props;
 
+  console.log("level props", props);
   const renderOrgUnitGroups = () => {
     return orgUnitGroups.map((group) => {
+      console.log("group", group.id);
+      console.log("selectedOrgUnitGroup", selectedOrgUnitGroup);
+      console.log("see", selectedOrgUnitGroup.indexOf(group.id) > -1);
       return (
         <MenuItem key={group.id} value={group.id}>
-          {group.displayName}
+          <Checkbox checked={selectedOrgUnitGroup.indexOf(group.id) > -1} />
+          <ListItemText primary={group.displayName} />
         </MenuItem>
       );
     });
@@ -24,18 +37,26 @@ const LevelGroupOrgUnitFilter = (props) => {
   const renderOrgUnitLevels = () => {
     return orgUnitLevels.map((level) => {
       return (
-        <MenuItem id={level.id} value={level.id}>
-          {level.displayName}
+        <MenuItem key={level.id} value={level.id}>
+          <Checkbox checked={selectedOrgUnitLevel.indexOf(level.id) > -1} />
+          <ListItemText primary={level.displayName} />
         </MenuItem>
       );
     });
   };
 
   const handleGroupChange = (event) => {
-    setSelectedOrgUnitGroup(event.target.value);
+    const value = event.target.value;
+    setSelectedOrgUnitGroup(
+      typeof value === "string" ? value.split(",") : value
+    );
   };
+
   const handleLevelChange = (event) => {
-    setSelectedOrgUnitLevel(event.target.value);
+    const value = event.target.value;
+    setSelectedOrgUnitLevel(
+      typeof value === "string" ? value.split(",") : value
+    );
   };
 
   return (
@@ -46,8 +67,17 @@ const LevelGroupOrgUnitFilter = (props) => {
           labelId="select-level"
           label="Select Level"
           fullWidth
+          multiple
           value={selectedOrgUnitLevel}
           onChange={handleLevelChange}
+          renderValue={(selected) =>
+            selected
+              .map(
+                (id) =>
+                  orgUnitLevels.find((level) => level.id === id).displayName
+              )
+              .join(", ")
+          }
         >
           {renderOrgUnitLevels()}
         </Select>
@@ -58,8 +88,17 @@ const LevelGroupOrgUnitFilter = (props) => {
           labelId="select-group"
           label="Select Group"
           fullWidth
+          multiple
           value={selectedOrgUnitGroup}
           onChange={handleGroupChange}
+          renderValue={(selected) =>
+            selected
+              .map(
+                (id) =>
+                  orgUnitGroups.find((group) => group.id === id).displayName
+              )
+              .join(", ")
+          }
         >
           {renderOrgUnitGroups()}
         </Select>

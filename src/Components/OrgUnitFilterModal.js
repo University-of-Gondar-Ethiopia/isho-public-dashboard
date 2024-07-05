@@ -15,8 +15,8 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [orgUnitLevels, setOrgUnitLevels] = useState([]);
   const apiBase = "https://hmis.dhis.et/";
   const [selected, setSelected] = useState([]);
-  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState("");
-  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState("");
+  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState([]);
+  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState([]);
 
   const fetchData = async () => {
     const url = `${apiBase}api/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
