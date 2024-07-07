@@ -108,11 +108,11 @@ export default function Chart({
     ));
   };
 
-  const handelFilterSelect = (filters) => {
+  const handelFilterSelect = (filters, orgunitFilters, orgunitLevelFilters) => {
     setFilters({
-      orgunits: filters[0],
-      orgunitGroup: filters[1],
-      orgunitLevel: filters[2],
+      orgunits: filters,
+      orgunitGroup: orgunitFilters,
+      orgunitLevel: orgunitLevelFilters,
     });
   };
 
