@@ -32,7 +32,6 @@ function Copyright(props) {
       align="center"
       {...props}
     >
-      <OrgUnitFilterModal />
       {"Copyright © "}
       <Link color="inherit" href="https://habtechsolution.com/">
         HABTech Solution

@@ -7,16 +7,20 @@ import DialogTitle from "@mui/material/DialogTitle";
 import OrgUnitFilter from "./OrgUnitFilter";
 import { Typography, Box, CircularProgress } from "@mui/material";
 import { useEffect } from "react";
+import ClearIcon from "@mui/icons-material/Clear";
 
-const OrgUnitFilterModal = () => {
+const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(null);
   const [orgUnitGroups, setOrgUnitGroups] = useState([]);
   const [orgUnitLevels, setOrgUnitLevels] = useState([]);
   const apiBase = "https://hmis.dhis.et/";
+  const [selected, setSelected] = useState([]);
+  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState([]);
+  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState([]);
 
   const fetchData = async () => {
-    const url = `${apiBase}api/40/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
+    const url = `${apiBase}api/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error("Failed to fetch data");
@@ -50,7 +54,7 @@ const OrgUnitFilterModal = () => {
 
   const hasChildren = async (nodes) => {
     for (const node of nodes) {
-      const urlChildren = `${apiBase}api/40/organisationUnits/${node.id}?fields=path,children%3A%3Asize`;
+      const urlChildren = `${apiBase}api/organisationUnits/${node.id}?fields=path,children%3A%3Asize`;
       const response = await fetch(urlChildren);
       if (!response.ok) {
         throw new Error("Failed to fetch data");
@@ -76,11 +80,56 @@ const OrgUnitFilterModal = () => {
   const handleClose = () => {
     setOpen(false);
   };
+
+  const handleConfirm = () => {
+    onConfirmed(selected, selectedOrgUnitGroup, selectedOrgUnitLevel);
+    console.log(
+      selected,
+      selectedOrgUnitGroup,
+      selectedOrgUnitLevel,
+      "selected, selectedOrgUnitGroup, selectedOrgUnitLevel"
+    );
+    setOpen(false);
+  };
+
+  const handelClearFitler = () => {
+    setSelected([]);
+    setSelectedOrgUnitGroup([]);
+    setSelectedOrgUnitLevel([]);
+    handleConfirm();
+  };
+
   return (
     <Box minHeight="2rem">
-      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        OrgUnitFilter
-      </Button>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-evenly",
+          flexDirection: "row",
+          marginRight: " 2%",
+          gap: "2%",
+        }}
+      >
+        <Button variant="outlined" color="primary" onClick={handleClickOpen}>
+          OrgUnitFilter
+        </Button>
+
+        {selected.length > 0 ||
+        selectedOrgUnitGroup.length > 0 ||
+        selectedOrgUnitLevel.length > 0 ? (
+          <Button
+            variant="outlined"
+            aria-label="clear filter"
+            color="primary"
+            onClick={handelClearFitler}
+          >
+            <ClearIcon />
+          </Button>
+        ) : (
+          ""
+        )}
+      </div>
       <Dialog
         sx={{ minHeight: "50vh", padding: "10px" }}
         open={open}
@@ -101,13 +150,19 @@ const OrgUnitFilterModal = () => {
               data={data}
               orgUnitGroups={orgUnitGroups}
               orgUnitLevels={orgUnitLevels}
+              selected={selected}
+              setSelected={setSelected}
+              selectedOrgUnitGroup={selectedOrgUnitGroup}
+              setSelectedOrgUnitGroup={setSelectedOrgUnitGroup}
+              selectedOrgUnitLevel={selectedOrgUnitLevel}
+              setSelectedOrgUnitLevel={setSelectedOrgUnitLevel}
             />
           ) : (
             <CircularProgress size={24} />
           )}
         </DialogContent>
         <DialogActions>
-          <Button color={"primary"} autoFocus onClick={handleClose}>
+          <Button color={"primary"} autoFocus onClick={handleConfirm}>
             Confirm
           </Button>
           <Button color={"inherit"} onClick={handleClose}>

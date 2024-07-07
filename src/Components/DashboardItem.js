@@ -67,6 +67,7 @@ import ScatterChartComponent from "./ScatterChartComponent";
 
 import * as science from "science";
 import ShareModal from "./ShareModal";
+import { filter } from "d3";
 // LOESS function
 const loess = function (xval, yval, bandwidth) {
   return science.stats.loess().bandwidth(bandwidth)(xval, yval);
@@ -129,7 +130,6 @@ function DashboardItem(props) {
     let url = apiBase;
     let id = "";
 
-    console.log(item, "item");
     if (
       item.type === "VISUALIZATION" ||
       item.type === "CHART" ||
@@ -189,6 +189,16 @@ function DashboardItem(props) {
           filters = "";
 
         for (const filter of data.filters) {
+          if (
+            filter.dimension == "ou" &&
+            (props.filters?.orgunits?.length > 0 ||
+              props.filters?.orgunitGroup?.length > 0 ||
+              props.filters?.orgunitLevel?.length > 0)
+          ) {
+            console.log("hit");
+            continue;
+          }
+
           filters += "&filter=" + filter.dimension;
           if (filter.items.length > 0) {
             let filterItemsId = getObjectItems(filter, "id");
@@ -202,10 +212,24 @@ function DashboardItem(props) {
             }
           }
         }
+        if (props?.filters) {
+          filters += "&filter=ou:";
+
+          filters += props?.filters.orgunitGroup
+            .map((g) => "OU_GROUP-" + g)
+            .join(";");
+
+          filters += props?.filters.orgunitLevel
+            .map((l) => "LEVEL-" + l)
+            .join(";");
+
+          filters += props?.filters.orgunits.join(";");
+        }
 
         for (const col of data.columns) {
           dimension += "dimension=";
           dimension += col.dimension;
+
           if (col.filter) {
             dimension += ":" + col.filter;
           }
@@ -304,9 +328,10 @@ function DashboardItem(props) {
         snackbar.showMessage("Failed to load data!", undefined, undefined, {
           type: "error",
         });
+        console.log(data);
         setLoading(false);
       });
-  }, []);
+  }, [props.filters]);
 
   const type = props?.item?.type.toLowerCase();
   const title = props?.item[type]?.displayName;
@@ -830,7 +855,15 @@ function DashboardItem(props) {
         />
       );
     } else if (chartInfo.type == "SINGLE_VALUE") {
-      let title = chartData.metaData.items[chartData.rows[0][0]].name;
+      let title =
+        chartData &&
+        chartData.rows &&
+        chartData.rows[0] &&
+        chartData.rows[0][0] &&
+        chartData.metaData.items[chartData.rows[0][0]]
+          ? chartData.metaData.items[chartData.rows[0][0]]?.name
+          : "";
+      console.log("singele value data", chartData);
       return (
         <div
           style={{

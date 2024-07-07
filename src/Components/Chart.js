@@ -12,6 +12,7 @@ import {
 import DashboardItems from "./DashboardItem";
 import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
+import OrgUnitFilterModal from "./OrgUnitFilterModal";
 
 function createData(time, amount) {
   return { time, amount: amount ?? null };
@@ -33,6 +34,7 @@ export default function Chart({
   const [dashboards, setDashboards] = React.useState([]);
   const snackbar = useSnackbar();
   const [loading, setLoading] = React.useState(true); // State variable for loading indicator
+  const [filters, setFilters] = React.useState(null);
 
   //load the list of charts
   React.useEffect(() => {
@@ -106,6 +108,14 @@ export default function Chart({
     ));
   };
 
+  const handelFilterSelect = (filters, orgunitFilters, orgunitLevelFilters) => {
+    setFilters({
+      orgunits: filters,
+      orgunitGroup: orgunitFilters,
+      orgunitLevel: orgunitLevelFilters,
+    });
+  };
+
   return (
     <React.Fragment>
       <Grid item xs={12} md={8} lg={9}>
@@ -113,8 +123,12 @@ export default function Chart({
           sx={{
             p: 2,
             display: "flex",
-            flexDirection: "column",
+            flexDirection: "row",
             height: "400",
+            flexWrap: "nowrap",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: "2%",
           }}
         >
           <FormControl fullWidth>
@@ -137,6 +151,8 @@ export default function Chart({
               )}
             </Select>
           </FormControl>
+
+          <OrgUnitFilterModal onConfirmed={handelFilterSelect} />
         </Paper>
       </Grid>
 
@@ -146,6 +162,7 @@ export default function Chart({
         items={
           selectedSavedChart ? selectedSavedChart : dashboard?.dashboardItems
         }
+        filters={filters}
       ></DashboardItems>
     </React.Fragment>
   );
