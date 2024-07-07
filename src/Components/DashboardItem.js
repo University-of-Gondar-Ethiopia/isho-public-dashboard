@@ -192,11 +192,13 @@ function DashboardItem(props) {
           if (
             filter.dimension == "ou" &&
             (props.filters?.orgunits?.length > 0 ||
-              props.filters.orgunitGroup ||
-              props.filters.orgunitLevel)
+              props.filters?.orgunitGroup?.length > 0 ||
+              props.filters?.orgunitLevel?.length > 0)
           ) {
+            console.log("hit");
             continue;
           }
+
           filters += "&filter=" + filter.dimension;
           if (filter.items.length > 0) {
             let filterItemsId = getObjectItems(filter, "id");
@@ -212,18 +214,22 @@ function DashboardItem(props) {
         }
         if (props?.filters) {
           filters += "&filter=ou:";
-          if (props?.filters.orgunitGroup) {
-            filters += "OU_GROUP-" + props?.filters.orgunitGroup + ";";
-          }
-          if (props?.filters.orgunitLevel) {
-            filters += "LEVEL-" + props?.filters.orgunitLevel + ";";
-          }
-          filters += props?.filters.orgunits.map((ou) => ou + ";");
+
+          filters += props?.filters.orgunitGroup
+            .map((g) => "OU_GROUP-" + g)
+            .join(";");
+
+          filters += props?.filters.orgunitLevel
+            .map((l) => "LEVEL-" + l)
+            .join(";");
+
+          filters += props?.filters.orgunits.join(";");
         }
 
         for (const col of data.columns) {
           dimension += "dimension=";
           dimension += col.dimension;
+
           if (col.filter) {
             dimension += ":" + col.filter;
           }
@@ -322,6 +328,7 @@ function DashboardItem(props) {
         snackbar.showMessage("Failed to load data!", undefined, undefined, {
           type: "error",
         });
+        console.log(data);
         setLoading(false);
       });
   }, [props.filters]);
@@ -856,6 +863,7 @@ function DashboardItem(props) {
         chartData.metaData.items[chartData.rows[0][0]]
           ? chartData.metaData.items[chartData.rows[0][0]]?.name
           : "";
+      console.log("singele value data", chartData);
       return (
         <div
           style={{

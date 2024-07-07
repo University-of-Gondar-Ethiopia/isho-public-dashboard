@@ -16,8 +16,8 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [orgUnitLevels, setOrgUnitLevels] = useState([]);
   const apiBase = "https://hmis.dhis.et/";
   const [selected, setSelected] = useState([]);
-  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState(undefined);
-  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState(undefined);
+  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState([]);
+  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState([]);
 
   const fetchData = async () => {
     const url = `${apiBase}api/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
@@ -83,13 +83,19 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
 
   const handleConfirm = () => {
     onConfirmed(selected, selectedOrgUnitGroup, selectedOrgUnitLevel);
+    console.log(
+      selected,
+      selectedOrgUnitGroup,
+      selectedOrgUnitLevel,
+      "selected, selectedOrgUnitGroup, selectedOrgUnitLevel"
+    );
     setOpen(false);
   };
 
   const handelClearFitler = () => {
     setSelected([]);
-    setSelectedOrgUnitGroup(undefined);
-    setSelectedOrgUnitLevel(undefined);
+    setSelectedOrgUnitGroup([]);
+    setSelectedOrgUnitLevel([]);
     handleConfirm();
   };
 
@@ -109,7 +115,9 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
           OrgUnitFilter
         </Button>
 
-        {selected.length > 0 || selectedOrgUnitGroup || selectedOrgUnitLevel ? (
+        {selected.length > 0 ||
+        selectedOrgUnitGroup.length > 0 ||
+        selectedOrgUnitLevel.length > 0 ? (
           <Button
             variant="outlined"
             aria-label="clear filter"
