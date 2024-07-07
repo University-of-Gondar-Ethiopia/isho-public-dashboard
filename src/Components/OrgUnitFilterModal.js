@@ -7,6 +7,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import OrgUnitFilter from "./OrgUnitFilter";
 import { Typography, Box, CircularProgress } from "@mui/material";
 import { useEffect } from "react";
+import ClearIcon from "@mui/icons-material/Clear";
 
 const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [open, setOpen] = useState(false);
@@ -15,8 +16,8 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [orgUnitLevels, setOrgUnitLevels] = useState([]);
   const apiBase = "https://hmis.dhis.et/";
   const [selected, setSelected] = useState([]);
-  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState("");
-  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState("");
+  const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState(undefined);
+  const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState(undefined);
 
   const fetchData = async () => {
     const url = `${apiBase}api/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
@@ -85,11 +86,42 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
     setOpen(false);
   };
 
+  const handelClearFitler = () => {
+    setSelected([]);
+    setSelectedOrgUnitGroup(undefined);
+    setSelectedOrgUnitLevel(undefined);
+    handleConfirm();
+  };
+
   return (
     <Box minHeight="2rem">
-      <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-        OrgUnitFilter
-      </Button>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-evenly",
+          flexDirection: "row",
+          marginRight: " 2%",
+          gap: "2%",
+        }}
+      >
+        <Button variant="outlined" color="primary" onClick={handleClickOpen}>
+          OrgUnitFilter
+        </Button>
+
+        {selected.length > 0 || selectedOrgUnitGroup || selectedOrgUnitLevel ? (
+          <Button
+            variant="outlined"
+            aria-label="clear filter"
+            color="primary"
+            onClick={handelClearFitler}
+          >
+            <ClearIcon />
+          </Button>
+        ) : (
+          ""
+        )}
+      </div>
       <Dialog
         sx={{ minHeight: "50vh", padding: "10px" }}
         open={open}

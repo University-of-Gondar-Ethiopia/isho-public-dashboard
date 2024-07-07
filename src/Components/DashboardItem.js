@@ -130,7 +130,6 @@ function DashboardItem(props) {
     let url = apiBase;
     let id = "";
 
-    console.log(item, "item");
     if (
       item.type === "VISUALIZATION" ||
       item.type === "CHART" ||
@@ -188,31 +187,36 @@ function DashboardItem(props) {
 
         let dimension = "",
           filters = "";
-        if (!props?.filters) {
-          for (const filter of data.filters) {
-            filters += "&filter=" + filter.dimension;
-            if (filter.items.length > 0) {
-              let filterItemsId = getObjectItems(filter, "id");
 
-              let filterDimensionItems = getObjectItems(
-                filter,
-                "dimensionItem"
-              );
-              if (filterItemsId.length > 0) {
-                filters += ":" + filterItemsId.join(";");
-              }
-              if (filterDimensionItems.length > 0) {
-                filters += ":" + filterDimensionItems.join(";");
-              }
+        for (const filter of data.filters) {
+          if (
+            filter.dimension == "ou" &&
+            (props.filters?.orgunits?.length > 0 ||
+              props.filters.orgunitGroup ||
+              props.filters.orgunitLevel)
+          ) {
+            continue;
+          }
+          filters += "&filter=" + filter.dimension;
+          if (filter.items.length > 0) {
+            let filterItemsId = getObjectItems(filter, "id");
+
+            let filterDimensionItems = getObjectItems(filter, "dimensionItem");
+            if (filterItemsId.length > 0) {
+              filters += ":" + filterItemsId.join(";");
+            }
+            if (filterDimensionItems.length > 0) {
+              filters += ":" + filterDimensionItems.join(";");
             }
           }
-        } else {
+        }
+        if (props?.filters) {
           filters += "&filter=ou:";
           if (props?.filters.orgunitGroup) {
-            filters += "OU-GROUP:" + props?.filters.orgunitGroup + ";";
+            filters += "OU_GROUP-" + props?.filters.orgunitGroup + ";";
           }
           if (props?.filters.orgunitLevel) {
-            filters += "LEVEL-:" + props?.filters.orgunitLevel + ";";
+            filters += "LEVEL-" + props?.filters.orgunitLevel + ";";
           }
           filters += props?.filters.orgunits.map((ou) => ou + ";");
         }
@@ -844,7 +848,14 @@ function DashboardItem(props) {
         />
       );
     } else if (chartInfo.type == "SINGLE_VALUE") {
-      let title = chartData.metaData.items[chartData.rows[0][0]].name;
+      let title =
+        chartData &&
+        chartData.rows &&
+        chartData.rows[0] &&
+        chartData.rows[0][0] &&
+        chartData.metaData.items[chartData.rows[0][0]]
+          ? chartData.metaData.items[chartData.rows[0][0]]?.name
+          : "";
       return (
         <div
           style={{
