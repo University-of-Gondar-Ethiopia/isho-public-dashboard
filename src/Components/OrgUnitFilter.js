@@ -109,31 +109,35 @@ const OrgUnitFilter = (props) => {
     );
   };
 
-  const renderTree = (nodes) => (
-    <CustomTreeItem
-      key={nodes.id}
-      itemId={nodes.id}
-      label={
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Checkbox
-            checked={selected.includes(nodes.id)}
-            onChange={(event) => handleSelect(event, nodes.id)}
-            onClick={(e) => e.stopPropagation()}
-          />
-          <FolderIcon />
-          <Typography variant="body2" ml={1}>
-            {nodes.displayName}
-          </Typography>
-        </Box>
-      }
-    >
-      {Array.isArray(nodes.children) ? (
-        nodes.children.map((node) => renderTree(node))
-      ) : nodes.hasChildren ? (
-        <CircularProgress size={24} />
-      ) : null}
-    </CustomTreeItem>
-  );
+  const renderTree = (nodes) => {
+    return (
+      <CustomTreeItem
+        key={nodes.id}
+        itemId={nodes.id}
+        label={
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Checkbox
+              checked={selected.includes(nodes.id)}
+              onChange={(event) => handleSelect(event, nodes.id)}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <FolderIcon />
+            <Typography variant="body2" ml={1}>
+              {nodes.displayName}
+            </Typography>
+          </Box>
+        }
+      >
+        {Array.isArray(nodes.children) ? (
+          nodes.children
+            .sort((a, b) => (a?.displayName > b?.displayName ? 1 : -1))
+            .map((node) => renderTree(node))
+        ) : nodes.hasChildren ? (
+          <CircularProgress size={24} />
+        ) : null}
+      </CustomTreeItem>
+    );
+  };
 
   return (
     <Box>
