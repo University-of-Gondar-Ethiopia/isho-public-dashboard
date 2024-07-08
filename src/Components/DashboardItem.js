@@ -19,6 +19,14 @@ import {
   lineElementClasses,
   markElementClasses,
 } from "@mui/x-charts/LineChart";
+import ShowChartIcon from "@mui/icons-material/ShowChart";
+import SplitscreenIcon from "@mui/icons-material/Splitscreen";
+import BarChartIcon from "@mui/icons-material/BarChart";
+import PieChartIcon from "@mui/icons-material/PieChart";
+import ScatterPlotIcon from "@mui/icons-material/ScatterPlot";
+import SpeedIcon from "@mui/icons-material/Speed";
+import PivotTableChartIcon from "@mui/icons-material/PivotTableChart";
+import InsightsIcon from "@mui/icons-material/Insights";
 
 import { ChartsReferenceLine } from "@mui/x-charts/ChartsReferenceLine";
 import regression from "regression";
@@ -124,6 +132,7 @@ function DashboardItem(props) {
   const snackbar = useSnackbar();
   const [ouDimension, setOuDimension] = React.useState(); // set ou dimention for loading the shapes
   const [shape, setShape] = React.useState(null);
+  const [customeChartType, setCustomChartType] = React.useState(undefined);
 
   React.useEffect(() => {
     let item = props?.item;
@@ -333,7 +342,7 @@ function DashboardItem(props) {
 
   const type = props?.item?.type.toLowerCase();
   const title = props?.item[type]?.displayName;
-  const chartType = chartInfo?.type.toLowerCase();
+  let chartType = chartInfo?.type.toLowerCase();
   const [fullScreenItem, setFullScreenItem] = React.useState(null);
   const item = props?.item;
   const id = item[type]?.id;
@@ -397,11 +406,14 @@ function DashboardItem(props) {
       return <Code>{JSON.stringify(chartData)}</Code>;
     }
 
+    // sort rows
     const rows = chartData.rows?.toSorted((a, b) => {
       let avalue = Number(a.length > 1 ? a[1] : a[0]);
       let bvalue = Number(b.length > 1 ? b[1] : b[0]);
       return avalue - bvalue;
     });
+
+    chartType = customeChartType ?? chartType;
 
     if (chartType === "pie") {
       chartConfig = {
@@ -896,9 +908,17 @@ function DashboardItem(props) {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [subMenuAnchorEl, setSubMenuAnchorEl] = React.useState(null);
+  const [anchorChangeChartType, setAnchorChangeChartType] =
+    React.useState(null);
+  const [subMenuAnchorChangeChartType, setSubMenuAnchorChangeChartType] =
+    React.useState(null);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
+  };
+
+  const handleClickChangeChartType = (event) => {
+    setAnchorChangeChartType(event.currentTarget);
   };
 
   const handleClose = () => {
@@ -906,8 +926,17 @@ function DashboardItem(props) {
     setSubMenuAnchorEl(null);
   };
 
+  const handleCloseChangeChartType = () => {
+    setAnchorChangeChartType(null);
+    setSubMenuAnchorChangeChartType(null);
+  };
+
   const handleSubMenuOpen = (event) => {
     setSubMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleSubMenuOpenChangeChartType = (event) => {
+    setSubMenuAnchorChangeChartType(event.currentTarget);
   };
 
   const handleSaveChart = () => {
@@ -989,10 +1018,14 @@ function DashboardItem(props) {
 
     handleClose();
   };
-  const popover_id = Boolean(subMenuAnchorEl) ? "simple-popover" : undefined;
 
+  const popover_id = Boolean(subMenuAnchorEl) ? "simple-popover" : undefined;
+  const popover_id2 = Boolean(subMenuAnchorChangeChartType)
+    ? "simple-popover2"
+    : undefined;
   const [selectShare, setSelectShare] = React.useState(false);
   const [shareURL, setShareURL] = React.useState("");
+
   const handleShare = () => {
     const currentURL = window.location.href;
     let shareURL;
@@ -1082,6 +1115,72 @@ function DashboardItem(props) {
                   <BookmarkAddIcon />
                 </ListItemIcon>
                 <ListItemText primary="Save" />
+              </MenuItem>
+              <MenuItem>
+                <ListItemIcon>
+                  <InsightsIcon />
+                </ListItemIcon>
+                <Popover
+                  id={popover_id2}
+                  open={Boolean(subMenuAnchorChangeChartType)}
+                  anchorEl={subMenuAnchorChangeChartType}
+                  onClose={() => setSubMenuAnchorChangeChartType(null)}
+                  anchorOrigin={{
+                    vertical: "top",
+                    horizontal: "right",
+                  }}
+                  transformOrigin={{
+                    vertical: "top",
+                    horizontal: "left",
+                  }}
+                >
+                  <MenuItem onClick={() => setCustomChartType("line")}>
+                    <ListItemIcon>
+                      <ShowChartIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Line Chart" />
+                  </MenuItem>
+                  <MenuItem onClick={() => setCustomChartType("column")}>
+                    <ListItemIcon>
+                      <BarChartIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Column Chart" />
+                  </MenuItem>
+                  <MenuItem onClick={() => setCustomChartType("pie")}>
+                    <ListItemIcon>
+                      <PieChartIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Pie Chart" />
+                  </MenuItem>
+                  <MenuItem onClick={() => setCustomChartType("bar")}>
+                    <ListItemIcon>
+                      <SplitscreenIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Bar Chart" />
+                  </MenuItem>
+                  <MenuItem onClick={() => setCustomChartType("scatter")}>
+                    <ListItemIcon>
+                      <ScatterPlotIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Scatter Chart" />
+                  </MenuItem>
+                  <MenuItem onClick={() => setCustomChartType("gauge")}>
+                    <ListItemIcon>
+                      <SpeedIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Gauge Chart" />
+                  </MenuItem>
+                  <MenuItem onClick={() => setCustomChartType("pivot_table")}>
+                    <ListItemIcon>
+                      <PivotTableChartIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Pivot Table" />
+                  </MenuItem>
+                </Popover>
+                <ListItemText
+                  onMouseEnter={handleSubMenuOpenChangeChartType}
+                  primary="Change Chart Type"
+                ></ListItemText>
               </MenuItem>
               <MenuItem onClick={handleShare}>
                 <ListItemIcon>
