@@ -21,7 +21,7 @@ function createData(time, amount) {
 const apiBase = "https://hmis.dhis.et/";
 const url =
   apiBase +
-  "api/dashboards.json?paging=false&fields=id,name,dashboardItems[id,resources[id, name],type,shape,x,y,width,height,text,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
+  "api/dashboards.json?paging=false&fields=id,name,favorite,dashboardItems[id,resources[id, name],type,shape,x,y,width,height,text,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
 
 export default function Chart({
   savedReports,
@@ -57,7 +57,11 @@ export default function Chart({
         const params = new URLSearchParams(window.location.search);
         const dashboardId = params.get("dashboard");
         const dashboardItemId = params.get("dashboardItemId");
-
+        dashboards_json.map((_dashboard) => {
+          if (_dashboard.favorite) {
+            setDashbaord(_dashboard);
+          }
+        });
         if (dashboardId) {
           const selectedDashboard = dashboards_json.find(
             (d) => d.id === dashboardId
