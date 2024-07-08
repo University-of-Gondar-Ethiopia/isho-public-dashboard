@@ -57,14 +57,14 @@ function SecondaryListItems({
         style={{ cursor: "pointer" }}
         component="div"
         onClick={() => {
-          if (savedReports.items.length > 0) {
+          if (savedReports && savedReports.items && savedReports.items.length > 0) {
             setSelectedSavedChart(savedReports.items);
             if (onSavedReportClick) {
               onSavedReportClick(); 
             }
           } else
             snackbar.showMessage(
-              "No saved reports yet. Click on save button to save reports.",
+              "No saved reports yet. You can save reports to display them here.",
               undefined,
               { autoHideDuration: 1000 },
               {
