@@ -26,7 +26,7 @@ const OrgUnitFilter = (props) => {
   const [expanded, setExpanded] = useState([]);
   const { selected, setSelected } = props;
   const [data, setData] = useState({ ...props.data });
-  const apiBase = "https://hmis.dhis.et/";
+  const apiBase = process.env.REACT_APP_BASE_URI;
 
   // cache object to store fetched data
   const dataCache = useMemo(() => ({}), []);

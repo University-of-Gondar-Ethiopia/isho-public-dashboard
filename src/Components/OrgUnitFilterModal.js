@@ -14,7 +14,7 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [data, setData] = useState(null);
   const [orgUnitGroups, setOrgUnitGroups] = useState([]);
   const [orgUnitLevels, setOrgUnitLevels] = useState([]);
-  const apiBase = "https://hmis.dhis.et/";
+  const apiBase = process.env.REACT_APP_BASE_URI;
   const [selected, setSelected] = useState([]);
   const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState([]);
   const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState([]);

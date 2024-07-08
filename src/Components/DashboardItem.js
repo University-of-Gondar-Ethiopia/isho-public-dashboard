@@ -73,8 +73,8 @@ const loess = function (xval, yval, bandwidth) {
   return science.stats.loess().bandwidth(bandwidth)(xval, yval);
 };
 
-const apiBase = "https://hmis.dhis.et/";
-// const apiBase = "https://play.dhis2.org/40.3.0/";
+const apiBase = process.env.REACT_APP_BASE_URI;
+
 const dimensionParam =
   "dimension,filter,programStage,items[dimensionItem,dimensionItemType]";
 
