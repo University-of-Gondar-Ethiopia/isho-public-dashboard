@@ -1,24 +1,24 @@
 {
-  "short_name": "Your Orders",
-  "name": "Your Orders",
+  "short_name": "DHIS2 Dashboard",
+  "name": "DHIS2 Dashboard",
   "icons": [
     {
       "src": "favicon.ico",
       "sizes": "29x28",
       "type": "image/x-icon",
-      "purpose" : "any maskable"
+      "purpose": "any maskable"
     },
 
     {
-      "src" : "favicon-144x144.png",
-      "sizes" : "144x144",
-      "type" : "image/png"
+      "src": "favicon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
     },
 
     {
-      "src" : "favicon-512x512.png",
-      "sizes" : "512x512",
-      "type" : "image/png"
+      "src": "favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ],
   "start_url": "/",
