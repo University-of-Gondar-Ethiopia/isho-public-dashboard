@@ -17,6 +17,8 @@ import { Download } from "@mui/icons-material";
 import useInstallPrompt from "../hooks/useInstallPrompt";
 import useDynamicPosition from "../hooks/useDynamicPosition";
 import Box from "@mui/material/Box";
+import Chart from "./Chart";
+import { Container, Grid } from "@mui/material";
 
 const truncateText = (text, maxLength) => {
   if (text.length <= maxLength) {
@@ -28,6 +30,7 @@ function SecondaryListItems({
   savedReports,
   setSavedReports,
   setSelectedSavedChart,
+  onSavedReportClick,
 }) {
   const handleDelete = (index) => {
     const newReport = {
@@ -44,6 +47,9 @@ function SecondaryListItems({
   const snackbar = useSnackbar();
   const { isAppInstalled, promptInstall } = useInstallPrompt();
   const position = useDynamicPosition();
+  const [_selectedSavedChart, _setSelectedSavedChart] = React.useState(
+    setSelectedSavedChart
+  );
 
   return (
     <React.Fragment>
@@ -51,11 +57,14 @@ function SecondaryListItems({
         style={{ cursor: "pointer" }}
         component="div"
         onClick={() => {
-          if (savedReports.items.length > 0)
+          if (savedReports && savedReports.items && savedReports.items.length > 0) {
             setSelectedSavedChart(savedReports.items);
-          else
+            if (onSavedReportClick) {
+              onSavedReportClick(); 
+            }
+          } else
             snackbar.showMessage(
-              "No saved reports yet. Click on save button to save reports.",
+              "No saved reports yet. You can save reports to display them here.",
               undefined,
               { autoHideDuration: 1000 },
               {
