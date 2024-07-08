@@ -57,11 +57,11 @@ export default function Chart({
         const params = new URLSearchParams(window.location.search);
         const dashboardId = params.get("dashboard");
         const dashboardItemId = params.get("dashboardItemId");
-        dashboards_json.map((_dashboard) => {
-          if (_dashboard.favorite) {
-            setDashbaord(_dashboard);
-          }
-        });
+        const favoriteDashboard = dashboards_json.find(_dashboard => _dashboard.favorite);
+
+        if (favoriteDashboard) {
+          setDashbaord(favoriteDashboard);
+        }
         if (dashboardId) {
           const selectedDashboard = dashboards_json.find(
             (d) => d.id === dashboardId
