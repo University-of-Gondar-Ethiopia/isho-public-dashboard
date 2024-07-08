@@ -83,7 +83,6 @@ const OrgUnitFilter = (props) => {
     };
 
     tempData = addChildren(tempData, 0);
-    console.log("tempData++", tempData);
     return tempData;
   };
 

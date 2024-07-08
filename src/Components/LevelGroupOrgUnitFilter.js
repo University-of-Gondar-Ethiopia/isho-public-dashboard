@@ -19,12 +19,8 @@ const LevelGroupOrgUnitFilter = (props) => {
     setSelectedOrgUnitLevel,
   } = props;
 
-  console.log("level props", props);
   const renderOrgUnitGroups = () => {
     return orgUnitGroups.map((group) => {
-      console.log("group", group.id);
-      console.log("selectedOrgUnitGroup", selectedOrgUnitGroup);
-      console.log("see", selectedOrgUnitGroup.indexOf(group.id) > -1);
       return (
         <MenuItem key={group.id} value={group.id}>
           <Checkbox checked={selectedOrgUnitGroup.indexOf(group.id) > -1} />

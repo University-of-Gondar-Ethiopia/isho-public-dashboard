@@ -195,7 +195,6 @@ function DashboardItem(props) {
               props.filters?.orgunitGroup?.length > 0 ||
               props.filters?.orgunitLevel?.length > 0)
           ) {
-            console.log("hit");
             continue;
           }
 
@@ -328,7 +327,6 @@ function DashboardItem(props) {
         snackbar.showMessage("Failed to load data!", undefined, undefined, {
           type: "error",
         });
-        console.log(data);
         setLoading(false);
       });
   }, [props.filters]);
@@ -863,7 +861,6 @@ function DashboardItem(props) {
         chartData.metaData.items[chartData.rows[0][0]]
           ? chartData.metaData.items[chartData.rows[0][0]]?.name
           : "";
-      console.log("singele value data", chartData);
       return (
         <div
           style={{
@@ -973,7 +970,6 @@ function DashboardItem(props) {
     }
     if (type.toLowerCase() == "csv") {
       let csvString = toCSVText(chartConfig);
-      console.log(csvString);
       saveAs(
         new Blob([toCSVText(chartConfig)], {
           type: "text/plain;charset=utf-8",

@@ -85,12 +85,6 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
 
   const handleConfirm = () => {
     onConfirmed(selected, selectedOrgUnitGroup, selectedOrgUnitLevel);
-    console.log(
-      selected,
-      selectedOrgUnitGroup,
-      selectedOrgUnitLevel,
-      "selected, selectedOrgUnitGroup, selectedOrgUnitLevel"
-    );
     setOpen(false);
   };
 

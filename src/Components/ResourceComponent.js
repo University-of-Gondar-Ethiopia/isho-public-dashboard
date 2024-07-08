@@ -7,7 +7,6 @@ const ResourceComponent = ({ resourcesItems }) => {
 
   const handleItemClick = (id, name) => {
     const url = `${apiBase}api/documents/${id}/data`;
-    // console.log("Fetching URL:", url);
     fetch(url, {
       method: "GET",
     })
