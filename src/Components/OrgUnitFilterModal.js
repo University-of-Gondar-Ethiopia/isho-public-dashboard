@@ -10,6 +10,8 @@ import { useEffect } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import IconButton from "@mui/material/IconButton";
+import Badge from "@mui/material/Badge";
+import Tooltip from "@mui/material/Tooltip";
 
 const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [open, setOpen] = useState(false);
@@ -95,6 +97,10 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
     handleConfirm();
   };
 
+  const filterCount =
+    selected.length + selectedOrgUnitGroup.length + selectedOrgUnitLevel.length;
+  const hasFilters = filterCount > 0;
+
   return (
     <Box minHeight="2rem">
       <div
@@ -107,28 +113,51 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
           gap: "2%",
         }}
       >
-        <IconButton
-          size="small"
-          variant="outlined"
-          color="primary"
-          onClick={handleClickOpen}
-          aria-label="filter org unit"
+        <Tooltip
+          arrow={false}
+          color="neutral"
+          placement="bottom"
+          size="sm"
+          variant="plain"
+          title="Apply Filter"
         >
-          <FilterListIcon />
-        </IconButton>
-
-        {selected.length > 0 ||
-        selectedOrgUnitGroup.length > 0 ||
-        selectedOrgUnitLevel.length > 0 ? (
           <IconButton
             size="small"
             variant="outlined"
-            aria-label="clear filter"
-            color="primary"
-            onClick={handelClearFitler}
+            color="secondary"
+            onClick={handleClickOpen}
+            aria-label="filter org unit"
           >
-            <ClearIcon />
+            <Badge
+              badgeContent={filterCount}
+              color="secondary"
+              visiable={hasFilters}
+              title="Number of Filters Applied"
+            >
+              <FilterListIcon />
+            </Badge>
           </IconButton>
+        </Tooltip>
+
+        {hasFilters ? (
+          <Tooltip
+            arrow={false}
+            color="neutral"
+            placement="bottom"
+            size="sm"
+            variant="plain"
+            title="Clear Filter"
+          >
+            <IconButton
+              size="small"
+              variant="outlined"
+              aria-label="clear filter"
+              color="secondary"
+              onClick={handelClearFitler}
+            >
+              <ClearIcon />
+            </IconButton>
+          </Tooltip>
         ) : (
           ""
         )}
