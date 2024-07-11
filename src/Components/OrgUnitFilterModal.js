@@ -22,6 +22,7 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [selected, setSelected] = useState([]);
   const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState([]);
   const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState([]);
+  const [hideEmptyCharts, setHideEmptyCharts] = useState(false);
 
   const fetchData = async () => {
     const url = `${apiBase}api/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
@@ -86,19 +87,28 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   };
 
   const handleConfirm = () => {
-    onConfirmed(selected, selectedOrgUnitGroup, selectedOrgUnitLevel);
+    onConfirmed(
+      selected,
+      selectedOrgUnitGroup,
+      selectedOrgUnitLevel,
+      hideEmptyCharts
+    );
     setOpen(false);
   };
 
   const handelClearFitler = () => {
-    setSelected([]);
-    setSelectedOrgUnitGroup([]);
-    setSelectedOrgUnitLevel([]);
-    handleConfirm();
+    setSelected(() => []);
+    setSelectedOrgUnitGroup(() => []);
+    setSelectedOrgUnitLevel(() => []);
+    setHideEmptyCharts(false);
+    onConfirmed([], [], [], false);
   };
 
   const filterCount =
-    selected.length + selectedOrgUnitGroup.length + selectedOrgUnitLevel.length;
+    selected.length +
+    selectedOrgUnitGroup.length +
+    selectedOrgUnitLevel.length +
+    hideEmptyCharts;
   const hasFilters = filterCount > 0;
 
   return (
@@ -188,6 +198,8 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
               setSelectedOrgUnitGroup={setSelectedOrgUnitGroup}
               selectedOrgUnitLevel={selectedOrgUnitLevel}
               setSelectedOrgUnitLevel={setSelectedOrgUnitLevel}
+              hideEmptyCharts={hideEmptyCharts}
+              setHideEmptyCharts={setHideEmptyCharts}
             />
           ) : (
             <CircularProgress size={24} />

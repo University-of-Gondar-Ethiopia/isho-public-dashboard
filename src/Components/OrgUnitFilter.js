@@ -4,6 +4,9 @@ import { SimpleTreeView, TreeItem, treeItemClasses } from "@mui/x-tree-view";
 import { styled, alpha } from "@mui/material/styles";
 import FolderIcon from "@mui/icons-material/Folder";
 import LevelGroupOrgUnitFilter from "./LevelGroupOrgUnitFilter";
+import Divider from "@mui/material/Divider";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
 
 const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
   [`& .${treeItemClasses.content}`]: {
@@ -138,6 +141,10 @@ const OrgUnitFilter = (props) => {
     );
   };
 
+  const handleHideEmptyCharts = (event) => {
+    props.setHideEmptyCharts(event.target.checked);
+  };
+
   return (
     <Box>
       <SimpleTreeView
@@ -161,6 +168,19 @@ const OrgUnitFilter = (props) => {
         selectedOrgUnitLevel={props.selectedOrgUnitLevel}
         setSelectedOrgUnitGroup={props.setSelectedOrgUnitGroup}
         setSelectedOrgUnitLevel={props.setSelectedOrgUnitLevel}
+      />
+
+      <Divider sx={{ my: 2 }} />
+
+      <FormControlLabel
+        control={
+          <Switch
+            checked={props.hideEmptyCharts}
+            onChange={handleHideEmptyCharts}
+          />
+        }
+        label="Hide empty charts"
+        sx={{ mx: 1 }}
       />
     </Box>
   );

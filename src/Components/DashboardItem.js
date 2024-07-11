@@ -216,7 +216,14 @@ function DashboardItem(props) {
             }
           }
         }
-        if (props?.filters) {
+        if (
+          props?.filters &&
+          ((props.filters.orgunits && props.filters.orgunits.length > 0) ||
+            (props.filters.orgunitGroup &&
+              props.filters.orgunitGroup.length > 0) ||
+            (props.filters.orgunitLevel &&
+              props.filters.orgunitLevel.length > 0))
+        ) {
           filters += "&filter=ou:";
 
           filters += props?.filters.orgunitGroup
@@ -390,14 +397,30 @@ function DashboardItem(props) {
 
   const renderChart = () => {
     if (!chartData) {
-      return <span style={{ color: "#DDD" }}>No Data</span>;
+      return <span style={{ color: "#DDD" }}>No Data Available</span>;
     }
 
     if (chartData.status || chartData?.rows?.length < 1) {
-      return <div>No data available: {JSON.stringify(chartData?.message)}</div>;
+      if (props?.filters?.hideEmptyCharts) {
+        if (
+          componentRef.current &&
+          componentRef.current?.parentElement &&
+          componentRef.current?.parentElement?.style
+        )
+          componentRef.current.parentElement.style.display = "none";
+        return null;
+      } else {
+        if (
+          componentRef.current &&
+          componentRef.current?.parentElement &&
+          componentRef.current?.parentElement?.style
+        )
+          componentRef.current.parentElement.style.display = "flex";
+        return (
+          <div>No data available: {JSON.stringify(chartData?.message)}</div>
+        );
+      }
     }
-
-    console.log(chartData, "chartData");
 
     if (chartType == "resources") {
       return <ResourceComponent resourcesItems={chartInfo.resources} />;

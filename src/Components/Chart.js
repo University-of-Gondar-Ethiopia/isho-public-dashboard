@@ -115,11 +115,17 @@ export default function Chart({
     ));
   };
 
-  const handelFilterSelect = (filters, orgunitFilters, orgunitLevelFilters) => {
+  const handelFilterSelect = (
+    orgunitFilters,
+    orgunitGroupFilters,
+    orgunitLevelFilters,
+    hideEmptyCharts
+  ) => {
     setFilters({
-      orgunits: filters,
-      orgunitGroup: orgunitFilters,
+      orgunits: orgunitFilters,
+      orgunitGroup: orgunitGroupFilters,
       orgunitLevel: orgunitLevelFilters,
+      hideEmptyCharts: hideEmptyCharts,
     });
   };
 
