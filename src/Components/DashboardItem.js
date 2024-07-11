@@ -58,9 +58,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import SettingsIcon from "@mui/icons-material/Settings";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
@@ -75,7 +72,6 @@ import ScatterChartComponent from "./ScatterChartComponent";
 
 import * as science from "science";
 import ShareModal from "./ShareModal";
-import { filter } from "d3";
 // LOESS function
 const loess = function (xval, yval, bandwidth) {
   return science.stats.loess().bandwidth(bandwidth)(xval, yval);
@@ -393,18 +389,20 @@ function DashboardItem(props) {
   };
 
   const renderChart = () => {
-    if (chartType == "resources") {
-      return <ResourceComponent resourcesItems={chartInfo.resources} />;
-    }
-    if (chartType === "text") return <TextChart item={item} />;
-
     if (!chartData) {
       return <span style={{ color: "#DDD" }}>No Data</span>;
     }
 
-    if (chartData.status) {
-      return <Code>{JSON.stringify(chartData)}</Code>;
+    if (chartData.status || chartData?.rows?.length < 1) {
+      return <div>No data available: {JSON.stringify(chartData?.message)}</div>;
     }
+
+    console.log(chartData, "chartData");
+
+    if (chartType == "resources") {
+      return <ResourceComponent resourcesItems={chartInfo.resources} />;
+    }
+    if (chartType === "text") return <TextChart item={item} />;
 
     // sort rows
     const rows = chartData.rows?.toSorted((a, b) => {
