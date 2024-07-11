@@ -18,7 +18,8 @@ function createData(time, amount) {
   return { time, amount: amount ?? null };
 }
 
-const apiBase = "https://hmis.dhis.et/";
+const apiBase = process.env.REACT_APP_BASE_URI;
+console.log(apiBase, "apiBase");
 const url =
   apiBase +
   "api/dashboards.json?paging=false&fields=id,name,favorite,dashboardItems[id,resources[id, name],type,shape,x,y,width,height,text,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
@@ -57,7 +58,9 @@ export default function Chart({
         const params = new URLSearchParams(window.location.search);
         const dashboardId = params.get("dashboard");
         const dashboardItemId = params.get("dashboardItemId");
-        const favoriteDashboard = dashboards_json.find(_dashboard => _dashboard.favorite);
+        const favoriteDashboard = dashboards_json.find(
+          (_dashboard) => _dashboard.favorite
+        );
 
         if (favoriteDashboard) {
           setDashbaord(favoriteDashboard);

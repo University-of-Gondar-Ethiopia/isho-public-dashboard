@@ -3,11 +3,10 @@ import { Description } from "@mui/icons-material";
 import { Box } from "@mui/material";
 
 const ResourceComponent = ({ resourcesItems }) => {
-  const apiBase = "https://hmis.dhis.et/";
+  const apiBase = process.env.REACT_APP_BASE_URI;
 
   const handleItemClick = (id, name) => {
     const url = `${apiBase}api/documents/${id}/data`;
-    // console.log("Fetching URL:", url);
     fetch(url, {
       method: "GET",
     })

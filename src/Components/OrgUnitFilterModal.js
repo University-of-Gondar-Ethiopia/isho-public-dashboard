@@ -8,13 +8,15 @@ import OrgUnitFilter from "./OrgUnitFilter";
 import { Typography, Box, CircularProgress } from "@mui/material";
 import { useEffect } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
+import FilterListIcon from "@mui/icons-material/FilterList";
+import IconButton from "@mui/material/IconButton";
 
 const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState(null);
   const [orgUnitGroups, setOrgUnitGroups] = useState([]);
   const [orgUnitLevels, setOrgUnitLevels] = useState([]);
-  const apiBase = "https://hmis.dhis.et/";
+  const apiBase = process.env.REACT_APP_BASE_URI;
   const [selected, setSelected] = useState([]);
   const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState([]);
   const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState([]);
@@ -83,12 +85,6 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
 
   const handleConfirm = () => {
     onConfirmed(selected, selectedOrgUnitGroup, selectedOrgUnitLevel);
-    console.log(
-      selected,
-      selectedOrgUnitGroup,
-      selectedOrgUnitLevel,
-      "selected, selectedOrgUnitGroup, selectedOrgUnitLevel"
-    );
     setOpen(false);
   };
 
@@ -111,21 +107,28 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
           gap: "2%",
         }}
       >
-        <Button variant="outlined" color="primary" onClick={handleClickOpen}>
-          OrgUnitFilter
-        </Button>
+        <IconButton
+          size="small"
+          variant="outlined"
+          color="primary"
+          onClick={handleClickOpen}
+          aria-label="filter org unit"
+        >
+          <FilterListIcon />
+        </IconButton>
 
         {selected.length > 0 ||
         selectedOrgUnitGroup.length > 0 ||
         selectedOrgUnitLevel.length > 0 ? (
-          <Button
+          <IconButton
+            size="small"
             variant="outlined"
             aria-label="clear filter"
             color="primary"
             onClick={handelClearFitler}
           >
             <ClearIcon />
-          </Button>
+          </IconButton>
         ) : (
           ""
         )}
