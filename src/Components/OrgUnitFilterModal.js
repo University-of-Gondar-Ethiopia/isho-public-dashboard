@@ -10,6 +10,8 @@ import { useEffect } from "react";
 import ClearIcon from "@mui/icons-material/Clear";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import IconButton from "@mui/material/IconButton";
+import Badge from "@mui/material/Badge";
+import Tooltip from "@mui/material/Tooltip";
 
 const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [open, setOpen] = useState(false);
@@ -20,6 +22,7 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   const [selected, setSelected] = useState([]);
   const [selectedOrgUnitGroup, setSelectedOrgUnitGroup] = useState([]);
   const [selectedOrgUnitLevel, setSelectedOrgUnitLevel] = useState([]);
+  const [hideEmptyCharts, setHideEmptyCharts] = useState(false);
 
   const fetchData = async () => {
     const url = `${apiBase}api/organisationUnits/b3aCK1PTn5S?fields=displayName, path, id, children%5Bid%2Cpath%2CdisplayName%5D`;
@@ -84,16 +87,29 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
   };
 
   const handleConfirm = () => {
-    onConfirmed(selected, selectedOrgUnitGroup, selectedOrgUnitLevel);
+    onConfirmed(
+      selected,
+      selectedOrgUnitGroup,
+      selectedOrgUnitLevel,
+      hideEmptyCharts
+    );
     setOpen(false);
   };
 
   const handelClearFitler = () => {
-    setSelected([]);
-    setSelectedOrgUnitGroup([]);
-    setSelectedOrgUnitLevel([]);
-    handleConfirm();
+    setSelected(() => []);
+    setSelectedOrgUnitGroup(() => []);
+    setSelectedOrgUnitLevel(() => []);
+    setHideEmptyCharts(false);
+    onConfirmed([], [], [], false);
   };
+
+  const filterCount =
+    selected.length +
+    selectedOrgUnitGroup.length +
+    selectedOrgUnitLevel.length +
+    hideEmptyCharts;
+  const hasFilters = filterCount > 0;
 
   return (
     <Box minHeight="2rem">
@@ -107,28 +123,51 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
           gap: "2%",
         }}
       >
-        <IconButton
-          size="small"
-          variant="outlined"
-          color="primary"
-          onClick={handleClickOpen}
-          aria-label="filter org unit"
+        <Tooltip
+          arrow={false}
+          color="neutral"
+          placement="bottom"
+          size="sm"
+          variant="plain"
+          title="Apply Filter"
         >
-          <FilterListIcon />
-        </IconButton>
-
-        {selected.length > 0 ||
-        selectedOrgUnitGroup.length > 0 ||
-        selectedOrgUnitLevel.length > 0 ? (
           <IconButton
             size="small"
             variant="outlined"
-            aria-label="clear filter"
-            color="primary"
-            onClick={handelClearFitler}
+            color="secondary"
+            onClick={handleClickOpen}
+            aria-label="filter org unit"
           >
-            <ClearIcon />
+            <Badge
+              badgeContent={filterCount}
+              color="secondary"
+              visiable={hasFilters}
+              title="Number of Filters Applied"
+            >
+              <FilterListIcon />
+            </Badge>
           </IconButton>
+        </Tooltip>
+
+        {hasFilters ? (
+          <Tooltip
+            arrow={false}
+            color="neutral"
+            placement="bottom"
+            size="sm"
+            variant="plain"
+            title="Clear Filter"
+          >
+            <IconButton
+              size="small"
+              variant="outlined"
+              aria-label="clear filter"
+              color="secondary"
+              onClick={handelClearFitler}
+            >
+              <ClearIcon />
+            </IconButton>
+          </Tooltip>
         ) : (
           ""
         )}
@@ -159,6 +198,8 @@ const OrgUnitFilterModal = ({ onConfirmed }) => {
               setSelectedOrgUnitGroup={setSelectedOrgUnitGroup}
               selectedOrgUnitLevel={selectedOrgUnitLevel}
               setSelectedOrgUnitLevel={setSelectedOrgUnitLevel}
+              hideEmptyCharts={hideEmptyCharts}
+              setHideEmptyCharts={setHideEmptyCharts}
             />
           ) : (
             <CircularProgress size={24} />

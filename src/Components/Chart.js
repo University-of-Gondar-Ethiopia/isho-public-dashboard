@@ -19,7 +19,7 @@ function createData(time, amount) {
 }
 
 const apiBase = process.env.REACT_APP_BASE_URI;
-console.log(apiBase, "apiBase");
+
 const url =
   apiBase +
   "api/dashboards.json?paging=false&fields=id,name,favorite,dashboardItems[id,resources[id, name],type,shape,x,y,width,height,text,visualization[id,displayName],map[id,displayName],eventReport[id,displayName],eventChart[id,displayName]]";
@@ -115,17 +115,23 @@ export default function Chart({
     ));
   };
 
-  const handelFilterSelect = (filters, orgunitFilters, orgunitLevelFilters) => {
+  const handelFilterSelect = (
+    orgunitFilters,
+    orgunitGroupFilters,
+    orgunitLevelFilters,
+    hideEmptyCharts
+  ) => {
     setFilters({
-      orgunits: filters,
-      orgunitGroup: orgunitFilters,
+      orgunits: orgunitFilters,
+      orgunitGroup: orgunitGroupFilters,
       orgunitLevel: orgunitLevelFilters,
+      hideEmptyCharts: hideEmptyCharts,
     });
   };
 
   return (
     <React.Fragment>
-      <Grid item xs={12} md={8} lg={9}>
+      <Grid item xs={12} md={10} lg={10}>
         <Paper
           sx={{
             p: 2,
