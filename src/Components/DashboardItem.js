@@ -166,7 +166,7 @@ function DashboardItem(props) {
       url +=
         "api/maps/" +
         id +
-        ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
+        ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,colorScale,opacity,layer,thematicMapType,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
     } else if (item.type == "TEXT") {
       id = item._id;
       setChartInfo({ ...item });
@@ -188,6 +188,7 @@ function DashboardItem(props) {
       })
       .then((data) => {
         if (item.type == "MAP") {
+          console.log("dataMapViews", data.mapViews)
           data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
           data.type = "map";
         }
@@ -393,10 +394,15 @@ function DashboardItem(props) {
   };
 
   const renderChart = () => {
+    console.log("entrance", chartType, chartData, shape);
     if (chartType == "resources") {
       return <ResourceComponent resourcesItems={chartInfo.resources} />;
     }
     if (chartType === "text") return <TextChart item={item} />;
+    // if (chartType === "map" && shape) {
+    //   console.log("All info", chartConfig, shape, chartData, chartType)
+    //   return <Map chartConfig={chartConfig} shape={shape} />;
+    // }
 
     if (!chartData) {
       return <span style={{ color: "#DDD" }}>No Data</span>;
@@ -412,9 +418,9 @@ function DashboardItem(props) {
       let bvalue = Number(b.length > 1 ? b[1] : b[0]);
       return avalue - bvalue;
     });
+    console.log("second entrance", chartType);
 
     chartType = customeChartType ?? chartType;
-
     if (chartType === "pie") {
       chartConfig = {
         colorByPoint: true,
@@ -471,6 +477,7 @@ function DashboardItem(props) {
 
       let columnSeries = {};
       let categories = [];
+      console.log("here chart Data", chartData, chartType);
       if (chartData) {
         for (const row of rows) {
           let n = getItemName(chartData, row[0]);
@@ -582,10 +589,14 @@ function DashboardItem(props) {
             </LineChart>
           );
         }
-
-        if (chartType === "map")
+        console.log("here too", chartType);
+        if (chartType === "map" && shape) {
+          console.log("It is called");
+          console.log("chartConfigInside", chartConfig)
+          console.log("chartDataInside", chartData)
+          console.log("chartInfoInside", chartInfo)
           return <Map chartConfig={chartConfig} shape={shape} />;
-
+        }
         if (chartType === "text") return <TextChart item={item} />;
         if (chartType === "bar") {
           return (
@@ -1254,6 +1265,7 @@ function DashboardItem(props) {
 }
 
 function DashboardItems(props) {
+  console.log("first props", props);
   if (props?.items?.length == 0) {
     return <div>Empty Dashboard</div>;
   }
