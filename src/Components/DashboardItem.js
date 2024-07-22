@@ -188,7 +188,6 @@ function DashboardItem(props) {
       })
       .then((data) => {
         if (item.type == "MAP") {
-          console.log("dataMapViews", data.mapViews)
           data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
           data.type = "map";
         }
@@ -591,11 +590,23 @@ function DashboardItem(props) {
         }
         console.log("here too", chartType);
         if (chartType === "map" && shape) {
-          console.log("It is called");
-          console.log("chartConfigInside", chartConfig)
-          console.log("chartDataInside", chartData)
-          console.log("chartInfoInside", chartInfo)
-          return <Map chartConfig={chartConfig} shape={shape} />;
+          console.log("It is called",shape);
+          console.log("chartConfigInside", chartConfig);
+          console.log("chartDataInside", chartData);
+          console.log("chartInfoInside", chartInfo);
+          let layer = chartInfo.layer;
+          let colorScale = chartInfo.colorScale;
+          let opacity = chartInfo.opacity;
+          if (layer == "thematic") {
+            return (
+              <Map
+                chartConfig={chartConfig}
+                shape={shape}
+                colorScale={colorScale}
+                opacity={opacity}
+              />
+            );
+          }
         }
         if (chartType === "text") return <TextChart item={item} />;
         if (chartType === "bar") {

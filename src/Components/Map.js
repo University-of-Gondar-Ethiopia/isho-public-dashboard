@@ -84,7 +84,13 @@
 
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
-import { MapContainer, TileLayer, Polygon, Tooltip, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Polygon,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import chroma from "chroma-js";
@@ -94,7 +100,10 @@ const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
   const map = useMap();
 
   useEffect(() => {
-    const controlDiv = L.DomUtil.create('div', 'leaflet-control-layers leaflet-control');
+    const controlDiv = L.DomUtil.create(
+      "div",
+      "leaflet-control-layers leaflet-control"
+    );
 
     const formControl = (
       <FormControl variant="outlined" style={{ minWidth: 120 }}>
@@ -106,17 +115,18 @@ const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
           onChange={(e) => setTileLayer(e.target.value)}
           label="Base Map"
         >
-          <MenuItem value="osm">OSM</MenuItem>
-          <MenuItem value="satellite">Satellite</MenuItem>
-          <MenuItem value="osmLight">OSM Light</MenuItem>
-          
+          {Object.keys(tileLayers).map((layer) => (
+            <MenuItem key={layer} value={layer}>
+              {layer}
+            </MenuItem>
+          ))}
         </Select>
       </FormControl>
     );
 
     ReactDOM.render(formControl, controlDiv);
 
-    const customControl = L.control({ position: 'topright' });
+    const customControl = L.control({ position: "topright" });
     customControl.onAdd = () => controlDiv;
     customControl.addTo(map);
 
@@ -128,21 +138,29 @@ const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
   return null;
 };
 
-const Map = ({ shape, chartConfig }) => {
+const Map = ({ shape, chartConfig, colorScale, opacity }) => {
   const [hoveredRegion, setHoveredRegion] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const [tileLayer, setTileLayer] = useState("osm");
-  console.log("shape in map", shape)
 
   const mapData = chartConfig.series;
   const regionList = chartConfig.yAxis;
 
-  const handleMouseEnter = (region) => {
+  const handleMouseEnter = (e, region) => {
     setHoveredRegion(region);
+    // e.target.bringToFront();
+    e.target.setStyle({
+      weight: 5,
+      fillOpacity: 0.7,
+    });
   };
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = (e) => {
     setHoveredRegion(null);
+    e.target.setStyle({
+      weight: 2,
+      fillOpacity: opacity,
+    });
   };
 
   const flattenCoordinates = (arr) => {
@@ -157,15 +175,25 @@ const Map = ({ shape, chartConfig }) => {
 
   const parseCoordinates = (co) => {
     const parsed = JSON.parse(co);
-    const flattened = flattenCoordinates(parsed);
-    return [flattened.map(([lng, lat]) => [lat, lng])];
+    return parsed.map((polygon) =>
+      flattenCoordinates(polygon).map(([lng, lat]) => [lat, lng])
+    );
   };
 
   const getColor = (index, total) => {
-    const scale = chroma
-      .scale(["#000", "#fff"])
-      .domain([0, 1]);
-    return scale(index / (totalRegions - 1)).hex();
+    const scale = chroma.scale(colorScale.split(",").reverse()).domain([0, 1]);
+    return scale(index / (total - 1)).hex();
+  };
+
+  const calculatePolygonArea = (polygon) => {
+    let area = 0;
+    const numPoints = polygon.length;
+    for (let i = 0; i < numPoints; i++) {
+      const [x1, y1] = polygon[i];
+      const [x2, y2] = polygon[(i + 1) % numPoints];
+      area += x1 * y2 - y1 * x2;
+    }
+    return Math.abs(area / 2);
   };
 
   useEffect(() => {
@@ -180,37 +208,54 @@ const Map = ({ shape, chartConfig }) => {
   }, [shape]);
 
   if (!mapBounds) {
-    return null; 
+    return null;
   }
 
   const totalRegions = shape.length;
-  let regionIndex;
+
+  // Sort regions by area in descending order (larger regions first)
+  const sortedShape = shape.slice().sort((a, b) => {
+    const areaA = parseCoordinates(a.co).reduce(
+      (sum, polygon) => sum + calculatePolygonArea(polygon),
+      0
+    );
+    const areaB = parseCoordinates(b.co).reduce(
+      (sum, polygon) => sum + calculatePolygonArea(polygon),
+      0
+    );
+    return areaB - areaA;
+  });
 
   const tileLayers = {
     osm: {
       url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     },
     satellite: {
       url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-      attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors',
+      attribution:
+        '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors',
     },
     osmLight: {
       url: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png",
-      attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> contributors',
+      attribution:
+        '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> contributors',
     },
-
-    
   };
 
   return (
-    <MapContainer bounds={mapBounds} style={{ height: "600px", width: "100%" }}>
+    <MapContainer bounds={mapBounds} style={{ height: "100%", width: "100%" }}>
       <TileLayer
         url={tileLayers[tileLayer].url}
         attribution={tileLayers[tileLayer].attribution}
       />
-      <CustomControl tileLayer={tileLayer} setTileLayer={setTileLayer} tileLayers={tileLayers} />
-      {shape?.map((region, index) => {
+      <CustomControl
+        tileLayer={tileLayer}
+        setTileLayer={setTileLayer}
+        tileLayers={tileLayers}
+      />
+      {sortedShape?.map((region, index) => {
         const coordinates = parseCoordinates(region.co);
         const color = getColor(index, totalRegions);
         return coordinates.map((polygon, polygonIndex) => (
@@ -218,29 +263,29 @@ const Map = ({ shape, chartConfig }) => {
             key={`${region.id}-${polygonIndex}`}
             positions={polygon}
             color={color}
-            fillOpacity={0.9}
+            fillOpacity={opacity}
             weight={2}
             eventHandlers={{
-              mouseover: () => handleMouseEnter(region),
-              mouseout: handleMouseLeave,
+              mouseover: (e) => handleMouseEnter(e, region),
+              mouseout: (e) => handleMouseLeave(e),
             }}
           >
             <Tooltip>
               <span>{`${region.na} - ${region.pn}`}</span>
-              {regionList.categories.find((name, num) => {
-                if (name === region.na) {
-                  regionIndex = num;
-                }
-              })}
-              <span>
-                {mapData.map((regionData) => {
-                  return (
-                    <li key={regionIndex}>
-                      {regionData.label} : {regionData.data[regionIndex]}
-                    </li>
-                  );
-                })}
-              </span>
+              {regionList.categories.map(
+                (name, num) =>
+                  name === region.na &&
+                  mapData.map(
+                    (regionData) => (
+                      console.log("regionData", name),
+                      (
+                        <li key={num}>
+                          {regionData.label} : {regionData.data[num]}
+                        </li>
+                      )
+                    )
+                  )
+              )}
             </Tooltip>
           </Polygon>
         ));
