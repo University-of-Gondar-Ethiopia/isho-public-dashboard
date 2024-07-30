@@ -604,8 +604,9 @@ function DashboardItem(props) {
           );
         }
 
-        if (chartType === "map")
+        if (chartType === "map") {
           return <Map chartConfig={chartConfig} shape={shape} />;
+        }
 
         if (chartType === "text") return <TextChart item={item} />;
         if (chartType === "bar") {
@@ -1086,6 +1087,7 @@ function DashboardItem(props) {
                 display: "flex",
                 flexDirection: "column",
                 height: "13cm",
+                width: "100%",
               }
         }
       >
