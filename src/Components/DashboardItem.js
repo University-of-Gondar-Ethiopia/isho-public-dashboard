@@ -163,6 +163,7 @@ function DashboardItem(props) {
         "]";
     } else if (item.type == "MAP") {
       id = item.map.id;
+      console.log("map id", id);
       url +=
         "api/maps/" +
         id +
@@ -188,8 +189,110 @@ function DashboardItem(props) {
       })
       .then((data) => {
         if (item.type == "MAP") {
+          console.log("another Item", item);
+          console.log("mapViews", data);
           data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
           data.type = "map";
+
+          //   const mapLayers = data.mapViews.map((view) => {
+          //     view = { ...data, ...view , type : "map"}
+          //     return view;
+          //   });
+
+          //   setChartInfo({...mapLayers, type : "map"});
+
+          //   mapLayers.forEach((mapLayer, index) => {
+          //     let dimension = "",
+          //       filters = "";
+
+          //     for (const filter of mapLayer.filters) {
+          //       if (
+          //         filter.dimension == "ou" &&
+          //         (props.filters?.orgunits?.length > 0 ||
+          //           props.filters?.orgunitGroup?.length > 0 ||
+          //           props.filters?.orgunitLevel?.length > 0)
+          //       ) {
+          //         continue;
+          //       }
+
+          //       filters += "&filter=" + filter.dimension;
+          //       if (filter.items.length > 0) {
+          //         let filterItemsId = getObjectItems(filter, "id");
+          //         let filterDimensionItems = getObjectItems(
+          //           filter,
+          //           "dimensionItem"
+          //         );
+          //         if (filterItemsId.length > 0) {
+          //           filters += ":" + filterItemsId.join(";");
+          //         }
+          //         if (filterDimensionItems.length > 0) {
+          //           filters += ":" + filterDimensionItems.join(";");
+          //         }
+          //       }
+          //     }
+
+          //     if (props?.filters) {
+          //       filters += "&filter=ou:";
+          //       filters += props?.filters.orgunitGroup
+          //         .map((g) => "OU_GROUP-" + g)
+          //         .join(";");
+          //       filters += props?.filters.orgunitLevel
+          //         .map((l) => "LEVEL-" + l)
+          //         .join(";");
+          //       filters += props?.filters.orgunits.join(";");
+          //     }
+
+          //     for (const col of mapLayer.columns) {
+          //       dimension += "dimension=";
+          //       dimension += col.dimension;
+          //       if (col.filter) {
+          //         dimension += ":" + col.filter;
+          //       }
+          //       if (col.items.length > 0) {
+          //         let colItemsId = getObjectItems(
+          //           col,
+          //           "id",
+          //           mapLayer.dataDimensionItems
+          //         );
+          //         let colDimensionItems = getObjectItems(col, "dimensionItem");
+          //         if (colItemsId.length > 0) {
+          //           dimension += ":" + colItemsId.join(";");
+          //         }
+          //         if (colDimensionItems.length > 0) {
+          //           dimension += ":" + colDimensionItems.join(";");
+          //         }
+          //       }
+          //     }
+
+          //     let ou_dimension;
+          //     for (const row of mapLayer.rows) {
+          //       dimension += "&dimension=";
+          //       dimension += row.dimension;
+          //       if (row.filter) {
+          //         dimension += ":" + row.filter;
+          //       }
+          //       if (row.items.length > 0) {
+          //         let rowItemsId = getObjectItems(row, "id");
+          //         let rowDimensionItems = getObjectItems(row, "dimensionItem");
+          //         if (rowItemsId.length > 0) {
+          //           dimension += ":" + rowItemsId.join(";");
+          //           if (row.dimension == "ou" && item.type == "MAP") {
+          //             ou_dimension = "ou:" + rowItemsId.join(";");
+          //           }
+          //         }
+          //         if (rowDimensionItems.length > 0) {
+          //           dimension += ":" + rowDimensionItems.join(";");
+          //         }
+          //       }
+          //     }
+          //   });
+
+          //   // data.type = "map";
+          // }
+
+          // if (data.type !== "map") {
+          //   setChartInfo(data);
+          // }
         }
 
         setChartInfo(data);
@@ -220,6 +323,7 @@ function DashboardItem(props) {
             }
           }
         }
+
         if (props?.filters) {
           filters += "&filter=ou:";
 
@@ -280,6 +384,7 @@ function DashboardItem(props) {
         }
 
         let url = apiBase;
+        console.log("item here", item);
         if (
           item.type === "VISUALIZATION" ||
           item.type === "CHART" ||
@@ -288,6 +393,7 @@ function DashboardItem(props) {
           id = item.visualization.id;
           url += "api/analytics.json?";
         } else if (item.type === "MAP") {
+          // console.log("here is called");
           id = item.map.id;
           url += "api/analytics.json?";
           //load shape data
@@ -393,15 +499,27 @@ function DashboardItem(props) {
   };
 
   const renderChart = () => {
-    console.log("entrance", chartType, chartData, shape);
+    console.log("entrance", chartType, chartData, shape, chartInfo);
     if (chartType == "resources") {
       return <ResourceComponent resourcesItems={chartInfo.resources} />;
     }
     if (chartType === "text") return <TextChart item={item} />;
-    // if (chartType === "map" && shape) {
-    //   console.log("All info", chartConfig, shape, chartData, chartType)
-    //   return <Map chartConfig={chartConfig} shape={shape} />;
-    // }
+    if (chartType === "map" && shape) {
+      let layer = chartInfo.layer;
+      let colorScale = chartInfo.colorScale;
+      let opacity = chartInfo.opacity;
+      if (layer == "orgUnit") {
+        console.log("finally got here");
+        return (
+          <Map
+            chartConfig={chartConfig}
+            shape={shape}
+            colorScale={colorScale}
+            opacity={0}
+          />
+        );
+      }
+    }
 
     if (!chartData) {
       return <span style={{ color: "#DDD" }}>No Data</span>;
@@ -590,14 +708,54 @@ function DashboardItem(props) {
         }
         console.log("here too", chartType);
         if (chartType === "map" && shape) {
-          console.log("It is called",shape);
+          console.log("It is called", shape);
           console.log("chartConfigInside", chartConfig);
           console.log("chartDataInside", chartData);
           console.log("chartInfoInside", chartInfo);
+          // const mapComponents = chartInfo.map((mapLayer, index) => {
+          //   console.log("mapLayer", mapLayer);
+          //   const { layer, colorScale, opacity } = mapLayer;
+
+          //   if (layer === "orgUnit") {
+          //     return (
+          //       <Map
+          //         key={`orgUnit-${index}`}
+          //         chartConfig={chartConfig}
+          //         shape={shape}
+          //         colorScale={colorScale}
+          //         opacity={0}
+          //       />
+          //     );
+          //   } else if (layer === "thematic") {
+          //     return (
+          //       <Map
+          //         key={`thematic-${index}`}
+          //         chartConfig={chartConfig}
+          //         shape={shape}
+          //         colorScale={colorScale}
+          //         opacity={opacity}
+          //       />
+          //     );
+          //   }
+          //   return null;
+          // });
+
+          // return <>{mapComponents}</>;
+
           let layer = chartInfo.layer;
           let colorScale = chartInfo.colorScale;
           let opacity = chartInfo.opacity;
-          if (layer == "thematic") {
+          if (layer == "orgUnit") {
+            console.log("finally got here");
+            return (
+              <Map
+                chartConfig={chartConfig}
+                shape={shape}
+                colorScale={colorScale}
+                opacity={0}
+              />
+            );
+          } else if (layer == "thematic") {
             return (
               <Map
                 chartConfig={chartConfig}

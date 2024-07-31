@@ -138,7 +138,8 @@ const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
   return null;
 };
 
-const Map = ({ shape, chartConfig, colorScale, opacity }) => {
+const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
+  console.log("shape of map", shape)
   const [hoveredRegion, setHoveredRegion] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const [tileLayer, setTileLayer] = useState("osm");
@@ -151,7 +152,6 @@ const Map = ({ shape, chartConfig, colorScale, opacity }) => {
     // e.target.bringToFront();
     e.target.setStyle({
       weight: 5,
-      fillOpacity: 0.7,
     });
   };
 
@@ -242,6 +242,11 @@ const Map = ({ shape, chartConfig, colorScale, opacity }) => {
       attribution:
         '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> contributors',
     },
+    darkBaseMap: {
+      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
+      attribution:
+        '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://carto.com/attributions">CARTO</a>',
+    },
   };
 
   return (
@@ -257,7 +262,13 @@ const Map = ({ shape, chartConfig, colorScale, opacity }) => {
       />
       {sortedShape?.map((region, index) => {
         const coordinates = parseCoordinates(region.co);
-        const color = getColor(index, totalRegions);
+        let color;
+        if(colorScale){
+          color = getColor(index, totalRegions);
+        } else {
+          color = "#000";
+        }
+       
         return coordinates.map((polygon, polygonIndex) => (
           <Polygon
             key={`${region.id}-${polygonIndex}`}
@@ -272,7 +283,7 @@ const Map = ({ shape, chartConfig, colorScale, opacity }) => {
           >
             <Tooltip>
               <span>{`${region.na} - ${region.pn}`}</span>
-              {regionList.categories.map(
+              {regionList?.categories?.map(
                 (name, num) =>
                   name === region.na &&
                   mapData.map(
