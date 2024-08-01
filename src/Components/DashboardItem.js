@@ -125,6 +125,147 @@ const getItemName = function (obj, key) {
   return key;
 };
 
+const getFilters = function (dataFilter, orgunitFilter) {
+  let filters = "";
+
+  for (const filter of dataFilter) {
+    if (
+      filter.dimension == "ou" &&
+      (orgunitFilter?.orgunits?.length > 0 ||
+        orgunitFilter?.orgunitGroup?.length > 0 ||
+        orgunitFilter?.orgunitLevel?.length > 0)
+    ) {
+      console.log("hit");
+      continue;
+    }
+
+    filters += "&filter=" + filter.dimension;
+    if (filter.items.length > 0) {
+      let filterItemsId = getObjectItems(filter, "id");
+
+      let filterDimensionItems = getObjectItems(filter, "dimensionItem");
+      if (filterItemsId.length > 0) {
+        filters += ":" + filterItemsId.join(";");
+      }
+      if (filterDimensionItems.length > 0) {
+        filters += ":" + filterDimensionItems.join(";");
+      }
+    }
+  }
+
+  if (orgunitFilter) {
+    filters += "&filter=ou:";
+
+    filters += orgunitFilter.orgunitGroup.map((g) => "OU_GROUP-" + g).join(";");
+
+    filters += orgunitFilter.orgunitLevel.map((l) => "LEVEL-" + l).join(";");
+
+    filters += orgunitFilter.orgunits.join(";");
+  }
+};
+
+const getDimensions = function (data) {
+  let dimension = "";
+  for (const col of data.columns) {
+    dimension += "dimension=";
+    dimension += col.dimension;
+
+    if (col.filter) {
+      dimension += ":" + col.filter;
+    }
+
+    if (col.items.length > 0) {
+      let colItemsId = getObjectItems(col, "id", data.dataDimensionItems);
+
+      let colDimensionItems = getObjectItems(col, "dimensionItem");
+      if (colItemsId.length > 0) {
+        dimension += ":" + colItemsId.join(";");
+      }
+      if (colDimensionItems.length > 0) {
+        dimension += ":" + colDimensionItems.join(";");
+      }
+    }
+  }
+
+  for (const row of data.rows) {
+    dimension += "&dimension=";
+    dimension += row.dimension;
+
+    if (row.filter) {
+      dimension += ":" + row.filter;
+    }
+
+    if (row.items.length > 0) {
+      let rowItemsId = getObjectItems(row, "id");
+      let rowDimensionItems = getObjectItems(row, "dimensionItem");
+
+      if (rowItemsId.length > 0) {
+        dimension += ":" + rowItemsId.join(";");
+      }
+      if (rowDimensionItems.length > 0) {
+        dimension += ":" + rowDimensionItems.join(";");
+      }
+    }
+  }
+
+  return dimension;
+};
+
+const getOuDimensions = function (rows, item) {
+  let ou_dimension;
+  for (const row of rows) {
+    if (row.items.length > 0) {
+      let rowItemsId = getObjectItems(row, "id");
+      if (rowItemsId.length > 0) {
+        if (row.dimension == "ou" && item.type == "MAP") {
+          ou_dimension = "ou:" + rowItemsId.join(";");
+        } // orgunit dimentions loading shapes from the API
+      }
+    }
+  }
+  return ou_dimension;
+};
+
+const toCSVText = function (chartConfig, title) {
+  if (!chartConfig) return "";
+
+  let csvString = title + "\n,";
+
+  if (chartConfig.data) {
+    // it is a pie chart
+    csvString +=
+      "\n" +
+      chartConfig.data.reduce(
+        (alldata, data) => alldata + data.label + "," + data.value + "\n",
+        ""
+      );
+  }
+
+  if (chartConfig.yAxis) {
+    // it is not a pie chart
+
+    csvString +=
+      chartConfig.series.reduce((x, y) => y.label + "," + x, "") + "\n"; // table header
+
+    csvString += chartConfig.yAxis.categories.reduce((alldata, category, i) => {
+      return (
+        alldata +
+        category +
+        "," +
+        chartConfig.series.reduce((y, series, seriesIndex) => {
+          let retString = y;
+          if (series.data[i]) retString += series.data[i] + ",";
+          else retString += ",";
+          return retString;
+        }, "") +
+        "\n"
+      );
+    }, "");
+  }
+
+  return csvString;
+};
+
 function DashboardItem(props) {
   const [chartInfo, setChartInfo] = React.useState();
   const [chartData, setChartData] = React.useState();
@@ -297,94 +438,13 @@ function DashboardItem(props) {
 
         setChartInfo(data);
 
-        let dimension = "",
-          filters = "";
-
-        for (const filter of data.filters) {
-          if (
-            filter.dimension == "ou" &&
-            (props.filters?.orgunits?.length > 0 ||
-              props.filters?.orgunitGroup?.length > 0 ||
-              props.filters?.orgunitLevel?.length > 0)
-          ) {
-            continue;
-          }
-
-          filters += "&filter=" + filter.dimension;
-          if (filter.items.length > 0) {
-            let filterItemsId = getObjectItems(filter, "id");
-
-            let filterDimensionItems = getObjectItems(filter, "dimensionItem");
-            if (filterItemsId.length > 0) {
-              filters += ":" + filterItemsId.join(";");
-            }
-            if (filterDimensionItems.length > 0) {
-              filters += ":" + filterDimensionItems.join(";");
-            }
-          }
-        }
-
-        if (props?.filters) {
-          filters += "&filter=ou:";
-
-          filters += props?.filters.orgunitGroup
-            .map((g) => "OU_GROUP-" + g)
-            .join(";");
-
-          filters += props?.filters.orgunitLevel
-            .map((l) => "LEVEL-" + l)
-            .join(";");
-
-          filters += props?.filters.orgunits.join(";");
-        }
-
-        for (const col of data.columns) {
-          dimension += "dimension=";
-          dimension += col.dimension;
-
-          if (col.filter) {
-            dimension += ":" + col.filter;
-          }
-
-          if (col.items.length > 0) {
-            let colItemsId = getObjectItems(col, "id", data.dataDimensionItems);
-
-            let colDimensionItems = getObjectItems(col, "dimensionItem");
-            if (colItemsId.length > 0) {
-              dimension += ":" + colItemsId.join(";");
-            }
-            if (colDimensionItems.length > 0) {
-              dimension += ":" + colDimensionItems.join(";");
-            }
-          }
-        }
-        let ou_dimension;
-        for (const row of data.rows) {
-          dimension += "&dimension=";
-          dimension += row.dimension;
-
-          if (row.filter) {
-            dimension += ":" + row.filter;
-          }
-
-          if (row.items.length > 0) {
-            let rowItemsId = getObjectItems(row, "id");
-            let rowDimensionItems = getObjectItems(row, "dimensionItem");
-
-            if (rowItemsId.length > 0) {
-              dimension += ":" + rowItemsId.join(";");
-              if (row.dimension == "ou" && item.type == "MAP") {
-                ou_dimension = "ou:" + rowItemsId.join(";");
-              } // orgunit dimentions loading shapes from the API
-            }
-            if (rowDimensionItems.length > 0) {
-              dimension += ":" + rowDimensionItems.join(";");
-            }
-          }
-        }
+        let filters = getFilters(data.filters, props?.filters);
+        let dimension = getDimensions(data);
+        let ou_dimension = getOuDimensions(data.rows, item);
 
         let url = apiBase;
         console.log("item here", item);
+
         if (
           item.type === "VISUALIZATION" ||
           item.type === "CHART" ||
@@ -454,49 +514,6 @@ function DashboardItem(props) {
   const id = item[type]?.id;
   item.id = id;
   let chartConfig = {};
-
-  const toCSVText = (chartConfig) => {
-    if (!chartConfig) return "";
-
-    let csvString = title + "\n,";
-
-    if (chartConfig.data) {
-      // it is a pie chart
-      csvString +=
-        "\n" +
-        chartConfig.data.reduce(
-          (alldata, data) => alldata + data.label + "," + data.value + "\n",
-          ""
-        );
-    }
-
-    if (chartConfig.yAxis) {
-      // it is not a pie chart
-
-      csvString +=
-        chartConfig.series.reduce((x, y) => y.label + "," + x, "") + "\n"; // table header
-
-      csvString += chartConfig.yAxis.categories.reduce(
-        (alldata, category, i) => {
-          return (
-            alldata +
-            category +
-            "," +
-            chartConfig.series.reduce((y, series, seriesIndex) => {
-              let retString = y;
-              if (series.data[i]) retString += series.data[i] + ",";
-              else retString += ",";
-              return retString;
-            }, "") +
-            "\n"
-          );
-        },
-        ""
-      );
-    }
-
-    return csvString;
-  };
 
   const renderChart = () => {
     console.log("entrance", chartType, chartData, shape, chartInfo);
@@ -1178,9 +1195,9 @@ function DashboardItem(props) {
       }
     }
     if (type.toLowerCase() == "csv") {
-      let csvString = toCSVText(chartConfig);
+      let csvString = toCSVText(chartConfig, title);
       saveAs(
-        new Blob([toCSVText(chartConfig)], {
+        new Blob([toCSVText(chartConfig, title)], {
           type: "text/plain;charset=utf-8",
         }),
         "downloaded_csv.csv"
@@ -1188,7 +1205,7 @@ function DashboardItem(props) {
     }
 
     if (type.toLowerCase() == "excel") {
-      let csvString = toCSVText(chartConfig);
+      let csvString = toCSVText(chartConfig, title);
       let json_data = await csvtojson().fromString(csvString);
       let ws = XLSX.utils.json_to_sheet(json_data);
       let wb = XLSX.utils.book_new();
