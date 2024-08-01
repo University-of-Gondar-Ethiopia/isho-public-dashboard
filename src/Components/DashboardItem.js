@@ -58,9 +58,6 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ListItemIcon from "@mui/material/ListItemIcon";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
-import SettingsIcon from "@mui/icons-material/Settings";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
@@ -73,205 +70,22 @@ import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
 import ScatterChartComponent from "./ScatterChartComponent";
 
-import * as science from "science";
+import { toCSVText, getObjectItems, loess, getItemName } from "../utils/common";
+import { getFilters, getOuDimensions, getDimensions } from "../utils/filters";
+
 import ShareModal from "./ShareModal";
-import { filter } from "d3";
-// LOESS function
-const loess = function (xval, yval, bandwidth) {
-  return science.stats.loess().bandwidth(bandwidth)(xval, yval);
-};
 
 const apiBase = process.env.REACT_APP_BASE_URI;
 
 const dimensionParam =
   "dimension,filter,programStage,items[dimensionItem,dimensionItemType]";
 
-const getObjectItems = function (obj, prop, dataDimensionItems) {
-  let res = [];
-  if (dataDimensionItems) {
-    for (let i = 0; i < obj.items.length; i++) {
-      const item = obj.items[i];
-      if (
-        item[prop] &&
-        dataDimensionItems[i] &&
-        dataDimensionItems[i].reportingRate &&
-        dataDimensionItems[i].reportingRate.dimensionItem
-      ) {
-        res.push(dataDimensionItems[i].reportingRate.dimensionItem);
-      } else if (item[prop]) {
-        res.push(item[prop]);
-      }
-    }
-  } else
-    for (const item of obj.items) {
-      if (item[prop]) {
-        res.push(item[prop]);
-      }
-    }
-
-  return res;
-};
-
-const getItemName = function (obj, key) {
-  if (
-    obj &&
-    obj.metaData &&
-    obj.metaData.items &&
-    obj.metaData.items[key] &&
-    obj.metaData.items[key].name
-  ) {
-    return obj.metaData.items[key].name;
-  }
-  return key;
-};
-
-const getFilters = function (dataFilter, orgunitFilter) {
-  let filters = "";
-
-  for (const filter of dataFilter) {
-    if (
-      filter.dimension == "ou" &&
-      (orgunitFilter?.orgunits?.length > 0 ||
-        orgunitFilter?.orgunitGroup?.length > 0 ||
-        orgunitFilter?.orgunitLevel?.length > 0)
-    ) {
-      console.log("hit");
-      continue;
-    }
-
-    filters += "&filter=" + filter.dimension;
-    if (filter.items.length > 0) {
-      let filterItemsId = getObjectItems(filter, "id");
-
-      let filterDimensionItems = getObjectItems(filter, "dimensionItem");
-      if (filterItemsId.length > 0) {
-        filters += ":" + filterItemsId.join(";");
-      }
-      if (filterDimensionItems.length > 0) {
-        filters += ":" + filterDimensionItems.join(";");
-      }
-    }
-  }
-
-  if (orgunitFilter) {
-    filters += "&filter=ou:";
-
-    filters += orgunitFilter.orgunitGroup.map((g) => "OU_GROUP-" + g).join(";");
-
-    filters += orgunitFilter.orgunitLevel.map((l) => "LEVEL-" + l).join(";");
-
-    filters += orgunitFilter.orgunits.join(";");
-  }
-};
-
-const getDimensions = function (data) {
-  let dimension = "";
-  for (const col of data.columns) {
-    dimension += "dimension=";
-    dimension += col.dimension;
-
-    if (col.filter) {
-      dimension += ":" + col.filter;
-    }
-
-    if (col.items.length > 0) {
-      let colItemsId = getObjectItems(col, "id", data.dataDimensionItems);
-
-      let colDimensionItems = getObjectItems(col, "dimensionItem");
-      if (colItemsId.length > 0) {
-        dimension += ":" + colItemsId.join(";");
-      }
-      if (colDimensionItems.length > 0) {
-        dimension += ":" + colDimensionItems.join(";");
-      }
-    }
-  }
-
-  for (const row of data.rows) {
-    dimension += "&dimension=";
-    dimension += row.dimension;
-
-    if (row.filter) {
-      dimension += ":" + row.filter;
-    }
-
-    if (row.items.length > 0) {
-      let rowItemsId = getObjectItems(row, "id");
-      let rowDimensionItems = getObjectItems(row, "dimensionItem");
-
-      if (rowItemsId.length > 0) {
-        dimension += ":" + rowItemsId.join(";");
-      }
-      if (rowDimensionItems.length > 0) {
-        dimension += ":" + rowDimensionItems.join(";");
-      }
-    }
-  }
-
-  return dimension;
-};
-
-const getOuDimensions = function (rows, item) {
-  let ou_dimension;
-  for (const row of rows) {
-    if (row.items.length > 0) {
-      let rowItemsId = getObjectItems(row, "id");
-      if (rowItemsId.length > 0) {
-        if (row.dimension == "ou" && item.type == "MAP") {
-          ou_dimension = "ou:" + rowItemsId.join(";");
-        } // orgunit dimentions loading shapes from the API
-      }
-    }
-  }
-  return ou_dimension;
-};
-
-const toCSVText = function (chartConfig, title) {
-  if (!chartConfig) return "";
-
-  let csvString = title + "\n,";
-
-  if (chartConfig.data) {
-    // it is a pie chart
-    csvString +=
-      "\n" +
-      chartConfig.data.reduce(
-        (alldata, data) => alldata + data.label + "," + data.value + "\n",
-        ""
-      );
-  }
-
-  if (chartConfig.yAxis) {
-    // it is not a pie chart
-
-    csvString +=
-      chartConfig.series.reduce((x, y) => y.label + "," + x, "") + "\n"; // table header
-
-    csvString += chartConfig.yAxis.categories.reduce((alldata, category, i) => {
-      return (
-        alldata +
-        category +
-        "," +
-        chartConfig.series.reduce((y, series, seriesIndex) => {
-          let retString = y;
-          if (series.data[i]) retString += series.data[i] + ",";
-          else retString += ",";
-          return retString;
-        }, "") +
-        "\n"
-      );
-    }, "");
-  }
-
-  return csvString;
-};
-
 function DashboardItem(props) {
   const [chartInfo, setChartInfo] = React.useState();
   const [chartData, setChartData] = React.useState();
   const [loading, setLoading] = React.useState(true);
   const snackbar = useSnackbar();
-  const [ouDimension, setOuDimension] = React.useState(); // set ou dimention for loading the shapes
+
   const [shape, setShape] = React.useState(null);
   const [customeChartType, setCustomChartType] = React.useState(undefined);
 
