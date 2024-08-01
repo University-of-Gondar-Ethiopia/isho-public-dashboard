@@ -755,7 +755,7 @@ function DashboardItem(props) {
           //     );
           //   }
           //   return null;
-          // });
+          // });r
 
           // return <>{mapComponents}</>;
 
@@ -1262,6 +1262,7 @@ function DashboardItem(props) {
                 display: "flex",
                 flexDirection: "column",
                 height: "13cm",
+                width: "100%",
               }
         }
       >
