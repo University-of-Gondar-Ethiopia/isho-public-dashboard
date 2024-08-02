@@ -95,6 +95,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import chroma from "chroma-js";
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import Legend from "./Legend";
 
 const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
   const map = useMap();
@@ -139,17 +140,47 @@ const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
 };
 
 const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
-  console.log("shape of map", shape)
   const [hoveredRegion, setHoveredRegion] = useState(null);
   const [mapBounds, setMapBounds] = useState(null);
   const [tileLayer, setTileLayer] = useState("osm");
 
   const mapData = chartConfig.series;
-  const regionList = chartConfig.yAxis;
+  const regionList = chartConfig?.yAxis?.categories;
+  const numColors = regionList?.length;
+  console.log("regionList", regionList);
+
+  // Combine data from all series
+  const combinedData = mapData?.reduce((acc, series) => {
+    return series.data.map((value, index) => (acc[index] || 0) + value);
+  }, []);
+  console.log("combine data", combinedData);
+  let mn, mx, range;
+  if (combinedData) {
+    mn = Math.min(...combinedData);
+    mx = Math.max(...combinedData);
+    range = mx - mn;
+  }
+
+  const colorScaleArray = chroma
+    .scale(colorScale?.split(","))
+    .domain([mn, mx])
+    .colors(numColors);
+
+  // Assign colors to regions
+  const regionColors = regionList?.map((regionName, index) => {
+    const value = combinedData[index];
+    const colorIndex = Math.floor(((value - mn) / range) * (numColors - 1));
+    return {
+      region: regionName,
+      value: value,
+      color: colorScaleArray[colorIndex],
+    };
+  });
+
+  console.log("regionColors", regionColors);
 
   const handleMouseEnter = (e, region) => {
     setHoveredRegion(region);
-    // e.target.bringToFront();
     e.target.setStyle({
       weight: 5,
     });
@@ -180,22 +211,6 @@ const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
     );
   };
 
-  const getColor = (index, total) => {
-    const scale = chroma.scale(colorScale.split(",").reverse()).domain([0, 1]);
-    return scale(index / (total - 1)).hex();
-  };
-
-  const calculatePolygonArea = (polygon) => {
-    let area = 0;
-    const numPoints = polygon.length;
-    for (let i = 0; i < numPoints; i++) {
-      const [x1, y1] = polygon[i];
-      const [x2, y2] = polygon[(i + 1) % numPoints];
-      area += x1 * y2 - y1 * x2;
-    }
-    return Math.abs(area / 2);
-  };
-
   useEffect(() => {
     let bounds = L.latLngBounds([]);
     shape?.forEach((region) => {
@@ -211,9 +226,19 @@ const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
     return null;
   }
 
+  const calculatePolygonArea = (polygon) => {
+    let area = 0;
+    const numPoints = polygon.length;
+    for (let i = 0; i < numPoints; i++) {
+      const [x1, y1] = polygon[i];
+      const [x2, y2] = polygon[(i + 1) % numPoints];
+      area += x1 * y2 - y1 * x2;
+    }
+    return Math.abs(area / 2);
+  };
+
   const totalRegions = shape.length;
 
-  // Sort regions by area in descending order (larger regions first)
   const sortedShape = shape.slice().sort((a, b) => {
     const areaA = parseCoordinates(a.co).reduce(
       (sum, polygon) => sum + calculatePolygonArea(polygon),
@@ -260,30 +285,33 @@ const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
         setTileLayer={setTileLayer}
         tileLayers={tileLayers}
       />
+      <Legend
+        colorScaleArray={colorScaleArray}
+        mn={mn}
+        mx={mx}
+        numColors={numColors}
+        regionColors={regionColors}
+      />
       {sortedShape?.map((region, index) => {
         const coordinates = parseCoordinates(region.co);
-        let color;
-        if(colorScale){
-          color = getColor(index, totalRegions);
-        } else {
-          color = "#000";
-        }
-       
+        const regionColor = regionColors?.find((rc) => rc.region === region.na);
+        const color = regionColor ? regionColor.color : "#000";
         return coordinates.map((polygon, polygonIndex) => (
           <Polygon
             key={`${region.id}-${polygonIndex}`}
             positions={polygon}
-            color={color}
+            fillColor={color}
+            color={"#000"}
             fillOpacity={opacity}
-            weight={2}
+            weight={1}
             eventHandlers={{
               mouseover: (e) => handleMouseEnter(e, region),
               mouseout: (e) => handleMouseLeave(e),
             }}
           >
             <Tooltip>
-              <span>{`${region.na} - ${region.pn}`}</span>
-              {regionList?.categories?.map(
+              <span>{`${region.na}`}</span>
+              {regionList?.map(
                 (name, num) =>
                   name === region.na &&
                   mapData.map(
