@@ -14,10 +14,6 @@ import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
 import OrgUnitFilterModal from "./OrgUnitFilterModal";
 
-function createData(time, amount) {
-  return { time, amount: amount ?? null };
-}
-
 const apiBase = process.env.REACT_APP_BASE_URI;
 
 const url =
