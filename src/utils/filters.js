@@ -10,7 +10,6 @@ const getFilters = function (dataFilter, orgunitFilter) {
         orgunitFilter?.orgunitGroup?.length > 0 ||
         orgunitFilter?.orgunitLevel?.length > 0)
     ) {
-      console.log("hit");
       continue;
     }
 
@@ -37,6 +36,7 @@ const getFilters = function (dataFilter, orgunitFilter) {
 
     filters += orgunitFilter.orgunits.join(";");
   }
+  return filters;
 };
 
 const getDimensions = function (data) {

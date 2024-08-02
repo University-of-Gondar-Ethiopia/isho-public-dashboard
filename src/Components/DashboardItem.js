@@ -254,7 +254,7 @@ function DashboardItem(props) {
 
         let filters = getFilters(data.filters, props?.filters);
         let dimension = getDimensions(data);
-        let ou_dimension = getOuDimensions(data.rows, item);
+        let ou_dimension = getOuDimensions(data.rows, { type: "map" });
 
         let url = apiBase;
         console.log("item here", item);
@@ -298,6 +298,7 @@ function DashboardItem(props) {
           return;
         }
 
+        console.log("filters", filters);
         url += dimension + filters;
 
         fetch(encodeURI(url))
