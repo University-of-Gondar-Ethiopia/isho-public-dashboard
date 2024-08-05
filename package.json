@@ -1,7 +1,7 @@
 {
   "name": "material-ui-cra",
   "version": "5.0.0",
-  "homepage": "https://university-of-gondar-ethiopia.github.io/isho-public-dashboard",
+  "homepage": "https://isho-dashboad.dhis.et",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
