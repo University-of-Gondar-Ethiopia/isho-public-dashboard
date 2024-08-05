@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.js": "/isho-public-dashboard/static/js/main.7767dfde.js",
+    "static/js/632.a62d8198.chunk.js": "/isho-public-dashboard/static/js/632.a62d8198.chunk.js",
+    "static/js/864.5451631a.chunk.js": "/isho-public-dashboard/static/js/864.5451631a.chunk.js",
+    "static/js/916.e9b99761.chunk.js": "/isho-public-dashboard/static/js/916.e9b99761.chunk.js",
+    "static/js/933.fc1d5dcb.chunk.js": "/isho-public-dashboard/static/js/933.fc1d5dcb.chunk.js",
+    "static/js/360.b6ea8add.chunk.js": "/isho-public-dashboard/static/js/360.b6ea8add.chunk.js",
+    "index.html": "/isho-public-dashboard/index.html",
+    "main.7767dfde.js.map": "/isho-public-dashboard/static/js/main.7767dfde.js.map",
+    "632.a62d8198.chunk.js.map": "/isho-public-dashboard/static/js/632.a62d8198.chunk.js.map",
+    "864.5451631a.chunk.js.map": "/isho-public-dashboard/static/js/864.5451631a.chunk.js.map",
+    "916.e9b99761.chunk.js.map": "/isho-public-dashboard/static/js/916.e9b99761.chunk.js.map",
+    "933.fc1d5dcb.chunk.js.map": "/isho-public-dashboard/static/js/933.fc1d5dcb.chunk.js.map",
+    "360.b6ea8add.chunk.js.map": "/isho-public-dashboard/static/js/360.b6ea8add.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/js/main.7767dfde.js"
+  ]
+}
