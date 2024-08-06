@@ -39,12 +39,10 @@ import Map from "./Map";
 import {
   Grid,
   Paper,
-  Snackbar,
   IconButton,
   Menu,
   MenuItem,
   ListItemText,
-  Button,
 } from "@mui/material";
 import AreaChartComponent from "./AreaChartComponent";
 import Title from "./Title";
@@ -62,7 +60,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import GaugeChart from "../lib";
-import { Code, Share } from "@mui/icons-material";
+import { Share } from "@mui/icons-material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";

@@ -1,6 +1,5 @@
 import {
   Box,
-  Typography,
   Button,
   Dialog,
   DialogContent,
@@ -19,7 +18,7 @@ const ShareModal = ({ open, onClose, url }) => {
   const handleCopy = () => {
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); 
+      setTimeout(() => setCopied(false), 2000);
     });
   };
   return (

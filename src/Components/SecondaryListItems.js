@@ -3,11 +3,6 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ListSubheader from "@mui/material/ListSubheader";
-import DashboardIcon from "@mui/icons-material/Dashboard";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import PeopleIcon from "@mui/icons-material/People";
-import BarChartIcon from "@mui/icons-material/BarChart";
-import LayersIcon from "@mui/icons-material/Layers";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import { IconButton } from "@mui/material";
 import { useSnackbar } from "material-ui-snackbar-provider";
@@ -17,8 +12,6 @@ import { Download } from "@mui/icons-material";
 import useInstallPrompt from "../hooks/useInstallPrompt";
 import useDynamicPosition from "../hooks/useDynamicPosition";
 import Box from "@mui/material/Box";
-import Chart from "./Chart";
-import { Container, Grid } from "@mui/material";
 
 const truncateText = (text, maxLength) => {
   if (text.length <= maxLength) {
@@ -57,10 +50,14 @@ function SecondaryListItems({
         style={{ cursor: "pointer" }}
         component="div"
         onClick={() => {
-          if (savedReports && savedReports.items && savedReports.items.length > 0) {
+          if (
+            savedReports &&
+            savedReports.items &&
+            savedReports.items.length > 0
+          ) {
             setSelectedSavedChart(savedReports.items);
             if (onSavedReportClick) {
-              onSavedReportClick(); 
+              onSavedReportClick();
             }
           } else
             snackbar.showMessage(

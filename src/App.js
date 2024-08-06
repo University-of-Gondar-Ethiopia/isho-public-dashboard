@@ -1,17 +1,7 @@
 import * as React from "react";
-import {
-  BrowserRouter as Router,
-  Route,
-  Switch,
-  Routes,
-} from "react-router-dom";
-import Container from "@mui/material/Container";
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Link from "@mui/material/Link";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Dashboard from "./Components/Dashboard";
 import RequestForm from "./Components/RequestForm";
-import useInstallPrompt from "./hooks/useInstallPrompt";
 import useServiceWorker from "./hooks/useServiceWorker";
 
 export default function App() {

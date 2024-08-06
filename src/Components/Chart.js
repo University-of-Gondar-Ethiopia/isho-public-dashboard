@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useTheme } from "@mui/material/styles";
+// import { useTheme } from "@mui/material/styles";
 import { CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import {
@@ -10,13 +10,8 @@ import {
   Paper,
 } from "@mui/material";
 import DashboardItems from "./DashboardItem";
-import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
 import OrgUnitFilterModal from "./OrgUnitFilterModal";
-
-function createData(time, amount) {
-  return { time, amount: amount ?? null };
-}
 
 const apiBase = process.env.REACT_APP_BASE_URI;
 
@@ -30,7 +25,7 @@ export default function Chart({
   selectedSavedChart,
   setSelectedSavedChart,
 }) {
-  const theme = useTheme();
+  // const theme = useTheme();
   const [dashboard, setDashbaord] = React.useState(null);
   const [dashboards, setDashboards] = React.useState([]);
   const snackbar = useSnackbar();

@@ -2,7 +2,6 @@ import { easeElastic, interpolateNumber } from "d3";
 import {
   calculateRotation,
   calculateRotationBaseline,
-  addText,
   addLabelText,
 } from "./utils";
 
@@ -17,15 +16,7 @@ export const drawReferenceLines = (
   outerRadius,
   g
 ) => {
-  const {
-    baseline,
-    needleColor,
-    needleBaseColor,
-    hideText,
-    animate,
-    needleScale,
-    textComponent,
-  } = props;
+  const { baseline, hideText, animate, needleScale, textComponent } = props;
 
   let needleRadius = 15 * (width.current / 1500), // Make the needle radius responsive
     centerPoint = [0, -needleRadius / 2];
@@ -100,15 +91,7 @@ export const drawTargetLine = (
   outerRadius,
   g
 ) => {
-  const {
-    target,
-    needleColor,
-    needleBaseColor,
-    hideText,
-    animate,
-    needleScale,
-    textComponent,
-  } = props;
+  const { target, hideText, animate, needleScale, textComponent } = props;
 
   let needleRadius = 15 * (width.current / 1500), // Make the needle radius responsive
     centerPoint = [0, -needleRadius / 2];
