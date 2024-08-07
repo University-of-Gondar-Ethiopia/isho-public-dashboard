@@ -1,6 +1,6 @@
 import { getObjectItems } from "./common";
 
-const getFilters = function (dataFilter, orgunitFilter) {
+const getFilters = function (dataFilter, orgunitFilter, aggregationType) {
   let filters = "";
 
   for (const filter of dataFilter) {
@@ -25,6 +25,11 @@ const getFilters = function (dataFilter, orgunitFilter) {
         filters += ":" + filterDimensionItems.join(";");
       }
     }
+  }
+
+  //apply aggregation type if defined
+  if (aggregationType) {
+    filters += "&aggregationType=" + aggregationType;
   }
 
   if (orgunitFilter) {
