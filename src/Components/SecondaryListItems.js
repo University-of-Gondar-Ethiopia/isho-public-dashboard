@@ -57,10 +57,14 @@ function SecondaryListItems({
         style={{ cursor: "pointer" }}
         component="div"
         onClick={() => {
-          if (savedReports && savedReports.items && savedReports.items.length > 0) {
+          if (
+            savedReports &&
+            savedReports.items &&
+            savedReports.items.length > 0
+          ) {
             setSelectedSavedChart(savedReports.items);
             if (onSavedReportClick) {
-              onSavedReportClick(); 
+              onSavedReportClick();
             }
           } else
             snackbar.showMessage(
@@ -109,7 +113,6 @@ function SecondaryListItems({
         sx={{
           position: "relative",
           bottom: position.bottom,
-          left: 5,
         }}
       >
         <ListItemButton onClick={promptInstall}>
