@@ -15,7 +15,6 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/indicator" element={<Indicator />} />
-          <Route path="/request-form" element={<RequestForm />} />
         </Routes>
       </Router>
     </div>
