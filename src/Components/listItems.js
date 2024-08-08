@@ -25,11 +25,5 @@ export const mainListItems = (
         <ListItemText primary="Indicator" />
       </ListItemButton>
     </Tooltip>
-    <ListItemButton component={Link} to="/request-form">
-      <ListItemIcon>
-        <SendTimeExtensionIcon />
-      </ListItemIcon>
-      <ListItemText primary="Request Form" />
-    </ListItemButton>
   </React.Fragment>
 );
