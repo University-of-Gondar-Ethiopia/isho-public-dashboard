@@ -106,7 +106,6 @@ function SecondaryListItems({
         sx={{
           position: "relative",
           bottom: position.bottom,
-          left: 5,
         }}
       >
         <ListItemButton onClick={promptInstall}>

@@ -1,17 +1,35 @@
-import { red } from "@mui/material/colors";
+import { red, yellow, orange } from "@mui/material/colors";
 import { createTheme } from "@mui/material/styles";
 
 // A custom theme for this app
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#556cd6",
+      main: "#009688",
     },
     secondary: {
-      main: "#19857b",
+      main: "#ff1744",
     },
     error: {
-      main: red.A400,
+      main: "#ad1457",
+    },
+    phase1: {
+      main: red["A100"],
+    },
+    phase2: {
+      main: orange.A400,
+    },
+    phase3: {
+      main: "#9e9d24",
+    },
+    phase4: {
+      main: yellow.A700,
+    },
+    phase6: {
+      main: "#00897b",
+    },
+    phase5: {
+      main: "#a7ffeb",
     },
   },
 });

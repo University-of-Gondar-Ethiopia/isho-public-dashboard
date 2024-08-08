@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Dashboard from "./Components/Dashboard";
 import RequestForm from "./Components/RequestForm";
 import useServiceWorker from "./hooks/useServiceWorker";
+import Indicator from "./Components/Indicator";
 
 export default function App() {
   useServiceWorker();
@@ -13,6 +14,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/indicator" element={<Indicator />} />
           <Route path="/request-form" element={<RequestForm />} />
         </Routes>
       </Router>

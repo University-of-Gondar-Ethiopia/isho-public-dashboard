@@ -43,6 +43,7 @@ import {
   Menu,
   MenuItem,
   ListItemText,
+  LinearProgress,
 } from "@mui/material";
 import AreaChartComponent from "./AreaChartComponent";
 import Title from "./Title";
@@ -142,7 +143,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,aggregationType,displayName,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -182,7 +183,7 @@ function DashboardItem(props) {
       })
       .then((data) => {
         if (item.type == "MAP") {
-          data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
+          data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers && aggregationType
           data.type = "map";
         }
 
@@ -235,6 +236,9 @@ function DashboardItem(props) {
           filters += props?.filters.orgunits.join(";");
         }
 
+        if (data.aggregationType)
+          filters += "&aggregationType=" + data.aggregationType;
+
         for (const col of data.columns) {
           dimension += "dimension=";
           dimension += col.dimension;
@@ -255,6 +259,7 @@ function DashboardItem(props) {
             }
           }
         }
+
         let ou_dimension;
         for (const row of data.rows) {
           dimension += "&dimension=";
@@ -893,11 +898,12 @@ function DashboardItem(props) {
         chartData.metaData.items[chartData.rows[0][0]]
           ? chartData.metaData.items[chartData.rows[0][0]]?.name
           : "";
+
+      const normalise = (value) => ((6 - value) * 100) / 6;
       return (
         <div
           style={{
             minHeight: "100%",
-            alignItems: "center",
             display: "flex",
             justifyContent: "center",
             flexDirection: "column",
@@ -907,12 +913,17 @@ function DashboardItem(props) {
             display="flex"
             alignItems="center"
             component="div"
-            variant="h1"
+            variant="h3"
             color="primary"
           >
-            {chartData.rows[0][1] + "%"}
+            {chartData.rows[0][1]}
           </Typography>
-
+          <LinearProgress
+            variant="determinate"
+            color={"phase" + Math.round(chartData.rows[0][1])}
+            value={normalise(chartData.rows[0][1])}
+            style={{ width: "100%", marginRight: "4px", height: "20px" }}
+          />
           <Typography>{title}</Typography>
         </div>
       );
@@ -1084,14 +1095,14 @@ function DashboardItem(props) {
                 p: 2,
                 display: "flex",
                 flexDirection: "column",
-                height: "13cm",
+                height: "6cm",
                 width: "100%",
               }
         }
       >
         <Grid container spacing={2}>
           <Grid item xs={10} sm={11}>
-            <Title>{title}</Title>
+            <Title>{title} </Title>
           </Grid>
           <Grid item xs={2} sm={1}>
             {fullScreenItem ? (

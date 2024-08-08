@@ -19,6 +19,7 @@ import Chart from "./Chart";
 import SecondaryListItems from "./SecondaryListItems";
 import theme from "../theme";
 import Copyright from "./Copyright";
+import IndicatorContainer from "./IndicatorContainer";
 
 const drawerWidth = 240;
 
@@ -66,7 +67,7 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-export default function Dashboard() {
+export default function Indicator() {
   const [open, setOpen] = React.useState(false);
   const toggleDrawer = () => {
     setOpen(!open);
@@ -149,13 +150,7 @@ export default function Dashboard() {
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container spacing={3}>
-              {/* Chart */}
-              <Chart
-                savedReports={savedReports}
-                setSavedReports={setSavedReports}
-                selectedSavedChart={selectedSavedChart}
-                setSelectedSavedChart={setSelectedSavedChart}
-              />
+              <IndicatorContainer></IndicatorContainer>
             </Grid>
             <Copyright sx={{ pt: 4 }} />
           </Container>
