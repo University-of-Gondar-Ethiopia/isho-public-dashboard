@@ -107,7 +107,7 @@ export default function Indicator() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              ISHO Dashboard: Explore State Digtial Health in Ethiopia
+              ISHO Dashboard: Explore State of Digtial Health in Ethiopia
             </Typography>
           </Toolbar>
         </AppBar>
