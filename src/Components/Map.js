@@ -82,6 +82,11 @@
 
 // export default Map;
 
+
+
+
+
+
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -90,14 +95,18 @@ import {
   Polygon,
   Tooltip,
   useMap,
+  Marker,
+  Popup,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import chroma from "chroma-js";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { FormControl, InputLabel, MenuItem, Select, SvgIcon } from "@mui/material";
+import ReactDOMServer from "react-dom/server";
+import { Home as HomeIcon, LocalHospital as LocalHospitalIcon, Room as RoomIcon } from "@mui/icons-material";
 import Legend from "./Legend";
+import { useMapLogic } from "../hooks/useMapLogic";
 
-const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
+const TileLayerControl = ({ tileLayer, setTileLayer, tileLayers }) => {
   const map = useMap();
 
   useEffect(() => {
@@ -139,117 +148,18 @@ const CustomControl = ({ tileLayer, setTileLayer, tileLayers }) => {
   return null;
 };
 
-const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
-  const [hoveredRegion, setHoveredRegion] = useState(null);
-  const [mapBounds, setMapBounds] = useState(null);
-  const [tileLayer, setTileLayer] = useState("osm");
-
-  const mapData = chartConfig.series;
-  const regionList = chartConfig?.yAxis?.categories;
-  const numColors = regionList?.length;
-  console.log("regionList", regionList);
-
-  // Combine data from all series
-  const combinedData = mapData?.reduce((acc, series) => {
-    return series.data.map((value, index) => (acc[index] || 0) + value);
-  }, []);
-  console.log("combine data", combinedData);
-  let mn, mx, range;
-  if (combinedData) {
-    mn = Math.min(...combinedData);
-    mx = Math.max(...combinedData);
-    range = mx - mn;
-  }
-
-  const colorScaleArray = chroma
-    .scale(colorScale?.split(","))
-    .domain([mn, mx])
-    .colors(numColors);
-
-  // Assign colors to regions
-  const regionColors = regionList?.map((regionName, index) => {
-    const value = combinedData[index];
-    const colorIndex = Math.floor(((value - mn) / range) * (numColors - 1));
-    return {
-      region: regionName,
-      value: value,
-      color: colorScaleArray[colorIndex],
-    };
+const createCustomIcon = (iconComponent, color) =>
+  new L.DivIcon({
+    html: ReactDOMServer.renderToString(
+      <SvgIcon component={iconComponent} style={{ color }} />
+    ),
+    className: "",
+    iconSize: [10, 10],
   });
 
-  console.log("regionColors", regionColors);
-
-  const handleMouseEnter = (e, region) => {
-    setHoveredRegion(region);
-    e.target.setStyle({
-      weight: 5,
-    });
-  };
-
-  const handleMouseLeave = (e) => {
-    setHoveredRegion(null);
-    e.target.setStyle({
-      weight: 2,
-      fillOpacity: opacity,
-    });
-  };
-
-  const flattenCoordinates = (arr) => {
-    return arr.reduce(
-      (acc, val) =>
-        Array.isArray(val[0])
-          ? acc.concat(flattenCoordinates(val))
-          : acc.concat([val]),
-      []
-    );
-  };
-
-  const parseCoordinates = (co) => {
-    const parsed = JSON.parse(co);
-    return parsed.map((polygon) =>
-      flattenCoordinates(polygon).map(([lng, lat]) => [lat, lng])
-    );
-  };
-
-  useEffect(() => {
-    let bounds = L.latLngBounds([]);
-    shape?.forEach((region) => {
-      const coordinates = parseCoordinates(region.co);
-      coordinates.forEach((polygon) => {
-        bounds.extend(polygon);
-      });
-    });
-    setMapBounds(bounds);
-  }, [shape]);
-
-  if (!mapBounds) {
-    return null;
-  }
-
-  const calculatePolygonArea = (polygon) => {
-    let area = 0;
-    const numPoints = polygon.length;
-    for (let i = 0; i < numPoints; i++) {
-      const [x1, y1] = polygon[i];
-      const [x2, y2] = polygon[(i + 1) % numPoints];
-      area += x1 * y2 - y1 * x2;
-    }
-    return Math.abs(area / 2);
-  };
-
-  const totalRegions = shape.length;
-
-  const sortedShape = shape.slice().sort((a, b) => {
-    const areaA = parseCoordinates(a.co).reduce(
-      (sum, polygon) => sum + calculatePolygonArea(polygon),
-      0
-    );
-    const areaB = parseCoordinates(b.co).reduce(
-      (sum, polygon) => sum + calculatePolygonArea(polygon),
-      0
-    );
-    return areaB - areaA;
-  });
+const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
+  const [tileLayer, setTileLayer] = useState(basemap === 'none' ? "osm" : basemap);
+  console.log("tile layer", tileLayer);
 
   const tileLayers = {
     osm: {
@@ -265,7 +175,7 @@ const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
     osmLight: {
       url: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png",
       attribution:
-        '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> contributors',
+        '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     },
     darkBaseMap: {
       url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
@@ -274,63 +184,152 @@ const Map = ({ shape, chartConfig, colorScale = null, opacity }) => {
     },
   };
 
+  const {
+    parsedMapViews,
+    parseCoordinates,
+    handleMouseEnter,
+    handleMouseLeave,
+    hoveredRegion,
+    mapBounds,
+  } = useMapLogic(mapViews, chartDatas, shapes);
+
+  if (!mapBounds) return null;
+
+  const renderFacilityMarkers = (viewData) =>
+    viewData.sortedShape.map((region, regionIndex) => {
+      const coordinates = parseCoordinates(region.co);
+      const [lat, lng] = coordinates[0][0];
+      const regionType = region.na.split(" ").pop().toLowerCase();
+
+      const markerIcons = {
+        hospital: createCustomIcon(LocalHospitalIcon, "red"),
+        clinic: createCustomIcon(RoomIcon, "red"),
+        healthpost: createCustomIcon(RoomIcon, "blue"),
+        healthcenter: createCustomIcon(HomeIcon, "green"),
+      };
+
+      const markerIcon = markerIcons[regionType] || markerIcons.healthcenter;
+
+      return (
+        <Marker key={`${region.id}-${regionIndex}`} position={[lat, lng]} icon={markerIcon}>
+          <Popup>
+            <span>{region.na}</span>
+          </Popup>
+        </Marker>
+      );
+    });
+
+  const renderOrgUnitPolygons = (viewData) =>
+    viewData.sortedShape.map((region, regionIndex) => {
+      const coordinates = parseCoordinates(region.co);
+      const opacity = 0;
+
+      return coordinates.map((polygon, polygonIndex) => (
+        <Polygon
+          key={`${region.id}-${polygonIndex}-${regionIndex}`}
+          positions={polygon}
+          color="#000"
+          fillOpacity={opacity}
+          weight={2}
+          eventHandlers={{
+            mouseover: (e) => handleMouseEnter(e, region),
+            mouseout: (e) => handleMouseLeave(e),
+          }}
+        >
+          <Tooltip>
+            {viewData.regionList
+              .filter((name) => name === region.na)
+              .map((name, num) =>
+                viewData.mapData.map((regionData) => (
+                  <li key={num}>
+                    {regionData.label}: {regionData.data[num]}
+                  </li>
+                ))
+              )}
+            <span>{region.na}</span>
+          </Tooltip>
+        </Polygon>
+      ));
+    });
+
+  const renderThematicPolygons = (viewData) =>
+    viewData.sortedShape.map((region, regionIndex) => {
+      const coordinates = parseCoordinates(region.co);
+      const regionColor = viewData.regionColors.find((rc) => rc.region === region.na);
+      const color = regionColor ? regionColor.color : "";
+      const opacity = color ? viewData.opacity : 0;
+
+      return coordinates.map((polygon, polygonIndex) => (
+        <Polygon
+          key={`${region.id}-${polygonIndex}-${regionIndex}`}
+          positions={polygon}
+          fillColor={color}
+          color="#000"
+          fillOpacity={opacity}
+          weight={2}
+          eventHandlers={{
+            mouseover: (e) => handleMouseEnter(e, region),
+            mouseout: (e) => handleMouseLeave(e),
+          }}
+        >
+          <Tooltip>
+            <span>
+              {region.na}
+              {viewData.regionList
+                .filter((name) => name === region.na)
+                .map((name, num) =>
+                  viewData.mapData.map((regionData) => (
+                    <li key={num}>
+                      {regionData.label}: {regionData.data[num]}
+                    </li>
+                  ))
+                )}
+            </span>
+          </Tooltip>
+        </Polygon>
+      ));
+    });
+
   return (
     <MapContainer bounds={mapBounds} style={{ height: "100%", width: "100%" }}>
       <TileLayer
         url={tileLayers[tileLayer].url}
         attribution={tileLayers[tileLayer].attribution}
       />
-      <CustomControl
-        tileLayer={tileLayer}
-        setTileLayer={setTileLayer}
-        tileLayers={tileLayers}
-      />
-      <Legend
-        colorScaleArray={colorScaleArray}
-        mn={mn}
-        mx={mx}
-        numColors={numColors}
-        regionColors={regionColors}
-      />
-      {sortedShape?.map((region, index) => {
-        const coordinates = parseCoordinates(region.co);
-        const regionColor = regionColors?.find((rc) => rc.region === region.na);
-        const color = regionColor ? regionColor.color : "#000";
-        return coordinates.map((polygon, polygonIndex) => (
-          <Polygon
-            key={`${region.id}-${polygonIndex}`}
-            positions={polygon}
-            fillColor={color}
-            color={"#000"}
-            fillOpacity={opacity}
-            weight={1}
-            eventHandlers={{
-              mouseover: (e) => handleMouseEnter(e, region),
-              mouseout: (e) => handleMouseLeave(e),
-            }}
-          >
-            <Tooltip>
-              <span>{`${region.na}`}</span>
-              {regionList?.map(
-                (name, num) =>
-                  name === region.na &&
-                  mapData.map(
-                    (regionData) => (
-                      console.log("regionData", name),
-                      (
-                        <li key={num}>
-                          {regionData.label} : {regionData.data[num]}
-                        </li>
-                      )
-                    )
-                  )
-              )}
-            </Tooltip>
-          </Polygon>
-        ));
+      <TileLayerControl tileLayer={tileLayer} setTileLayer={setTileLayer} tileLayers={tileLayers} />
+
+      {parsedMapViews.map((viewData) => {
+        switch (viewData?.layer) {
+          case "facility":
+            return renderFacilityMarkers(viewData);
+          case "orgUnit":
+            return renderOrgUnitPolygons(viewData);
+          case "thematic":
+            return renderThematicPolygons(viewData);
+          default:
+            return null;
+        }
       })}
+
+      
+      {/* <Legend
+        colorScaleArray={parsedMapViews[0]?.colorScaleArray}
+        mn={Math.min(
+          ...parsedMapViews.map((v) =>
+            Math.min(...v?.mapData.map((d) => Math.min(...d.data)))
+          )
+        )}
+        mx={Math.max(
+          ...parsedMapViews.map((v) =>
+            Math.max(...v?.mapData.map((d) => Math.max(...d.data)))
+          )
+        )}
+        numColors={parsedMapViews[0]?.regionColors?.length || 0}
+        regionColors={parsedMapViews[0]?.regionColors || []}
+      /> */}
     </MapContainer>
   );
 };
 
 export default Map;
+

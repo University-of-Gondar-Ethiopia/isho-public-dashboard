@@ -69,6 +69,7 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
 import ScatterChartComponent from "./ScatterChartComponent";
+import MapComponent from "./MapComponent";
 
 import { toCSVText, getObjectItems, loess, getItemName } from "../utils/common";
 import { getFilters, getOuDimensions, getDimensions } from "../utils/filters";
@@ -85,6 +86,7 @@ function DashboardItem(props) {
   const [chartData, setChartData] = React.useState();
   const [loading, setLoading] = React.useState(true);
   const snackbar = useSnackbar();
+  const [mapData, setMapData] = React.useState();
 
   const [shape, setShape] = React.useState(null);
   const [customeChartType, setCustomChartType] = React.useState(undefined);
@@ -123,6 +125,7 @@ function DashboardItem(props) {
         "api/maps/" +
         id +
         ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,colorScale,opacity,layer,thematicMapType,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
+        
     } else if (item.type == "TEXT") {
       id = item._id;
       setChartInfo({ ...item });
@@ -146,8 +149,14 @@ function DashboardItem(props) {
         if (item.type == "MAP") {
           console.log("another Item", item);
           console.log("mapViews", data);
-          data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
           data.type = "map";
+          console.log("map origin", data);
+          setMapData({ ...data });
+          // data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
+
+          setLoading(false);
+          return;
+          // data.type = "map";
 
           //   const mapLayers = data.mapViews.map((view) => {
           //     view = { ...data, ...view , type : "map"}
@@ -266,25 +275,25 @@ function DashboardItem(props) {
         ) {
           id = item.visualization.id;
           url += "api/analytics.json?";
-        } else if (item.type === "MAP") {
-          // console.log("here is called");
-          id = item.map.id;
-          url += "api/analytics.json?";
-          //load shape data
-          let geoFeatures =
-            apiBase +
-            "api/geoFeatures.json?" +
-            "ou=" +
-            ou_dimension +
-            "&displayProperty=NAME";
-          console.log(geoFeatures);
-          fetch(encodeURI(geoFeatures))
-            .then((response) => {
-              return response.json();
-            })
-            .then((shapeData) => {
-              setShape(shapeData);
-            });
+          // } else if (item.type === "MAP") {
+          //   // console.log("here is called");
+          //   id = item.map.id;
+          //   url += "api/analytics.json?";
+          //   //load shape data
+          //   let geoFeatures =
+          //     apiBase +
+          //     "api/geoFeatures.json?" +
+          //     "ou=" +
+          //     ou_dimension +
+          //     "&displayProperty=NAME";
+          //   console.log(geoFeatures);
+          //   fetch(encodeURI(geoFeatures))
+          //     .then((response) => {
+          //       return response.json();
+          //     })
+          //     .then((shapeData) => {
+          //       setShape(shapeData);
+          //     });
         } else if (item.type === "EVENT_CHART") {
           id = item.eventChart.id;
           url +=
@@ -336,21 +345,31 @@ function DashboardItem(props) {
       return <ResourceComponent resourcesItems={chartInfo.resources} />;
     }
     if (chartType === "text") return <TextChart item={item} />;
-    if (chartType === "map" && shape) {
-      let layer = chartInfo.layer;
-      let colorScale = chartInfo.colorScale;
-      let opacity = chartInfo.opacity;
-      if (layer == "orgUnit") {
-        console.log("finally got here");
-        return (
-          <Map
-            chartConfig={chartConfig}
-            shape={shape}
-            colorScale={colorScale}
-            opacity={0}
-          />
-        );
-      }
+    if (mapData && mapData.type === "map") {
+      
+      return (
+        <MapComponent
+          data={mapData}
+          setMapData={setMapData}
+          mainProps={props}
+          setLoading={setLoading}
+          setChartData={setChartData}
+        />
+      );
+      // let layer = chartInfo.layer;
+      // let colorScale = chartInfo.colorScale;
+      // let opacity = chartInfo.opacity;
+      // if (layer == "orgUnit") {
+      //   console.log("finally got here");
+      //   return (
+      // <Map
+      //   chartConfig={chartConfig}
+      //   shape={shape}
+      //   colorScale={colorScale}
+      //   opacity={0}
+      // />
+      //   );
+      // }
     }
 
     if (!chartData) {
@@ -539,65 +558,65 @@ function DashboardItem(props) {
           );
         }
         console.log("here too", chartType);
-        if (chartType === "map" && shape) {
-          console.log("It is called", shape);
-          console.log("chartConfigInside", chartConfig);
-          console.log("chartDataInside", chartData);
-          console.log("chartInfoInside", chartInfo);
-          // const mapComponents = chartInfo.map((mapLayer, index) => {
-          //   console.log("mapLayer", mapLayer);
-          //   const { layer, colorScale, opacity } = mapLayer;
+        // if (chartType === "map" && shape) {
+        //   console.log("It is called", shape);
+        //   console.log("chartConfigInside", chartConfig);
+        //   console.log("chartDataInside", chartData);
+        //   console.log("chartInfoInside", chartInfo);
+        //   // const mapComponents = chartInfo.map((mapLayer, index) => {
+        //   //   console.log("mapLayer", mapLayer);
+        //   //   const { layer, colorScale, opacity } = mapLayer;
 
-          //   if (layer === "orgUnit") {
-          //     return (
-          //       <Map
-          //         key={`orgUnit-${index}`}
-          //         chartConfig={chartConfig}
-          //         shape={shape}
-          //         colorScale={colorScale}
-          //         opacity={0}
-          //       />
-          //     );
-          //   } else if (layer === "thematic") {
-          //     return (
-          //       <Map
-          //         key={`thematic-${index}`}
-          //         chartConfig={chartConfig}
-          //         shape={shape}
-          //         colorScale={colorScale}
-          //         opacity={opacity}
-          //       />
-          //     );
-          //   }
-          //   return null;
-          // });r
+        //   //   if (layer === "orgUnit") {
+        //   //     return (
+        //   //       <Map
+        //   //         key={`orgUnit-${index}`}
+        //   //         chartConfig={chartConfig}
+        //   //         shape={shape}
+        //   //         colorScale={colorScale}
+        //   //         opacity={0}
+        //   //       />
+        //   //     );
+        //   //   } else if (layer === "thematic") {
+        //   //     return (
+        //   //       <Map
+        //   //         key={`thematic-${index}`}
+        //   //         chartConfig={chartConfig}
+        //   //         shape={shape}
+        //   //         colorScale={colorScale}
+        //   //         opacity={opacity}
+        //   //       />
+        //   //     );
+        //   //   }
+        //   //   return null;
+        //   // });r
 
-          // return <>{mapComponents}</>;
+        //   // return <>{mapComponents}</>;
 
-          let layer = chartInfo.layer;
-          let colorScale = chartInfo.colorScale;
-          let opacity = chartInfo.opacity;
-          if (layer == "orgUnit") {
-            console.log("finally got here");
-            return (
-              <Map
-                chartConfig={chartConfig}
-                shape={shape}
-                colorScale={colorScale}
-                opacity={0}
-              />
-            );
-          } else if (layer == "thematic") {
-            return (
-              <Map
-                chartConfig={chartConfig}
-                shape={shape}
-                colorScale={colorScale}
-                opacity={opacity}
-              />
-            );
-          }
-        }
+        //   let layer = chartInfo.layer;
+        //   let colorScale = chartInfo.colorScale;
+        //   let opacity = chartInfo.opacity;
+        //   if (layer == "orgUnit") {
+        //     console.log("finally got here");
+        //     return (
+        //       <Map
+        //         chartConfig={chartConfig}
+        //         shape={shape}
+        //         colorScale={colorScale}
+        //         opacity={0}
+        //       />
+        //     );
+        //   } else if (layer == "thematic") {
+        //     return (
+        //       <Map
+        //         chartConfig={chartConfig}
+        //         shape={shape}
+        //         colorScale={colorScale}
+        //         opacity={opacity}
+        //       />
+        //     );
+        //   }
+        // }
         if (chartType === "text") return <TextChart item={item} />;
         if (chartType === "bar") {
           return (
