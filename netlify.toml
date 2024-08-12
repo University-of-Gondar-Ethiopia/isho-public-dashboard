@@ -7,3 +7,8 @@
     from = "/request-form"
     to = "/#/request-form"
     status = 200
+
+[[redirects]]
+  from = "/indicator"
+  to = "/#/indicator"
+  status = 200
