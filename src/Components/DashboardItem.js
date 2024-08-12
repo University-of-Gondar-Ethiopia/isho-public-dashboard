@@ -105,7 +105,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,displayName,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,displayName,aggregationType,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -261,7 +261,11 @@ function DashboardItem(props) {
 
         setChartInfo(data);
 
-        let filters = getFilters(data.filters, props?.filters);
+        let filters = getFilters(
+          data.filters,
+          props?.filters,
+          data?.aggregationType
+        );
         let dimension = getDimensions(data);
         let ou_dimension = getOuDimensions(data.rows, { type: "map" });
 
