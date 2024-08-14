@@ -768,7 +768,7 @@ function DashboardItem(props) {
             textColor="#000"
             arcsLength={[0.15, 0.1, 0.55]}
             colors={["#009688", "#CDDC39", "#F44336"]}
-            target={0.8}
+            target={chartInfo.targetLineValue}
             baseline={chartInfo.baseLineValue}
           />
           <span align="center">
