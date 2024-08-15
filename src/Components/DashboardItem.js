@@ -70,6 +70,7 @@ import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
 import ScatterChartComponent from "./ScatterChartComponent";
 import MapComponent from "./MapComponent";
+import RadarChartComponent from "./RadarChartComponent";
 
 import { toCSVText, getObjectItems, loess, getItemName } from "../utils/common";
 import { getFilters, getOuDimensions, getDimensions } from "../utils/filters";
@@ -899,7 +900,19 @@ function DashboardItem(props) {
           chartConfig={chartConfig}
         />
       );
-    } else if (chartInfo.type == "SINGLE_VALUE") {
+    }else if(chartInfo.type == "RADAR"){
+      console.log("radar chart", chartData,"chartInfo", chartInfo,"item", item,"config", chartConfig);
+      return (
+        <RadarChartComponent
+          key={item._id}
+          chartData={chartData}
+          chartInfo={chartInfo}
+          item={item}
+          chartConfig={chartConfig}
+        />
+      );
+    }
+     else if (chartInfo.type == "SINGLE_VALUE") {
       let title =
         chartData &&
         chartData.rows &&
