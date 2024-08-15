@@ -82,11 +82,6 @@
 
 // export default Map;
 
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -100,9 +95,19 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { FormControl, InputLabel, MenuItem, Select, SvgIcon } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SvgIcon,
+} from "@mui/material";
 import ReactDOMServer from "react-dom/server";
-import { Home as HomeIcon, LocalHospital as LocalHospitalIcon, Room as RoomIcon } from "@mui/icons-material";
+import {
+  Home as HomeIcon,
+  LocalHospital as LocalHospitalIcon,
+  Room as RoomIcon,
+} from "@mui/icons-material";
 import Legend from "./Legend";
 import { useMapLogic } from "../hooks/useMapLogic";
 
@@ -158,7 +163,10 @@ const createCustomIcon = (iconComponent, color) =>
   });
 
 const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
-  const [tileLayer, setTileLayer] = useState(basemap === 'none' ? "osm" : basemap);
+  const [tileLayer, setTileLayer] = useState(
+    basemap === "none" ? "osm" : basemap
+  );
+  const legendData = [];
   console.log("tile layer", tileLayer);
 
   const tileLayers = {
@@ -195,8 +203,17 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
 
   if (!mapBounds) return null;
 
-  const renderFacilityMarkers = (viewData) =>
-    viewData.sortedShape.map((region, regionIndex) => {
+  const renderFacilityMarkers = (viewData) => {
+    legendData.push({
+      name: "orgUnit",
+      colorScaleArray: [],
+      mn: 0,
+      mx: 0,
+      numColors: 0,
+      regionColors: [],
+    });
+
+    return viewData.sortedShape.map((region, regionIndex) => {
       const coordinates = parseCoordinates(region.co);
       const [lat, lng] = coordinates[0][0];
       const regionType = region.na.split(" ").pop().toLowerCase();
@@ -211,16 +228,30 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
       const markerIcon = markerIcons[regionType] || markerIcons.healthcenter;
 
       return (
-        <Marker key={`${region.id}-${regionIndex}`} position={[lat, lng]} icon={markerIcon}>
+        <Marker
+          key={`${region.id}-${regionIndex}`}
+          position={[lat, lng]}
+          icon={markerIcon}
+        >
           <Popup>
             <span>{region.na}</span>
           </Popup>
         </Marker>
       );
     });
+  };
 
-  const renderOrgUnitPolygons = (viewData) =>
-    viewData.sortedShape.map((region, regionIndex) => {
+  const renderOrgUnitPolygons = (viewData) => {
+    legendData.push({
+      name: "orgUnit",
+      colorScaleArray: [],
+      mn: 0,
+      mx: 0,
+      numColors: 0,
+      regionColors: [],
+    });
+
+    return viewData.sortedShape.map((region, regionIndex) => {
       const coordinates = parseCoordinates(region.co);
       const opacity = 0;
 
@@ -251,11 +282,32 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
         </Polygon>
       ));
     });
+  };
 
-  const renderThematicPolygons = (viewData) =>
-    viewData.sortedShape.map((region, regionIndex) => {
+  const renderThematicPolygons = (viewData) => {
+    const legendMn = Math.min(
+      ...viewData.mapData.map((d) => Math.min(...d.data))
+    );
+    const legendMx = Math.max(
+      ...viewData.mapData.map((d) => Math.max(...d.data))
+    );
+    const legendNumColors = viewData.regionColors?.length || 0;
+    const legendRegionColors = viewData.regionColors || [];
+
+    legendData.push({
+      name: "thematic",
+      colorScaleArray: viewData.colorScale,
+      mn: legendMn,
+      mx: legendMx,
+      numColors: legendNumColors,
+      regionColors: legendRegionColors,
+    });
+
+    return viewData.sortedShape.map((region, regionIndex) => {
       const coordinates = parseCoordinates(region.co);
-      const regionColor = viewData.regionColors.find((rc) => rc.region === region.na);
+      const regionColor = viewData.regionColors.find(
+        (rc) => rc.region === region.na
+      );
       const color = regionColor ? regionColor.color : "";
       const opacity = color ? viewData.opacity : 0;
 
@@ -289,14 +341,18 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
         </Polygon>
       ));
     });
-
+  };
   return (
     <MapContainer bounds={mapBounds} style={{ height: "100%", width: "100%" }}>
       <TileLayer
         url={tileLayers[tileLayer].url}
         attribution={tileLayers[tileLayer].attribution}
       />
-      <TileLayerControl tileLayer={tileLayer} setTileLayer={setTileLayer} tileLayers={tileLayers} />
+      <TileLayerControl
+        tileLayer={tileLayer}
+        setTileLayer={setTileLayer}
+        tileLayers={tileLayers}
+      />
 
       {parsedMapViews.map((viewData) => {
         switch (viewData?.layer) {
@@ -311,25 +367,35 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
         }
       })}
 
-      
-      {/* <Legend
-        colorScaleArray={parsedMapViews[0]?.colorScaleArray}
-        mn={Math.min(
-          ...parsedMapViews.map((v) =>
-            Math.min(...v?.mapData.map((d) => Math.min(...d.data)))
-          )
-        )}
-        mx={Math.max(
-          ...parsedMapViews.map((v) =>
-            Math.max(...v?.mapData.map((d) => Math.max(...d.data)))
-          )
-        )}
-        numColors={parsedMapViews[0]?.regionColors?.length || 0}
-        regionColors={parsedMapViews[0]?.regionColors || []}
-      /> */}
+      {parsedMapViews.map((viewData) => {
+        if (viewData?.layer === "thematic") {
+          return (
+            <Legend
+              colorScaleArray={viewData.colorScaleArray}
+              mn={Math.min(...viewData.mapData.map((d) => Math.min(...d.data)))}
+              mx={Math.max(...viewData.mapData.map((d) => Math.max(...d.data)))}
+              numColors={viewData.regionColors?.length || 0}
+              regionColors={viewData.regionColors || []}
+            />
+          );
+        }
+      })}
+
+      {/* {legendData.map(
+       (legend, index) =>
+         legend.name === "thematic" && (
+           <Legend
+             key={index}
+             colorScaleArray={legend.colorScaleArray}
+             mn={legend.mn}
+             mx={legend.mx}
+             numColors={legend.numColors}
+             regionColors={legend.regionColors}
+           />
+         )
+     )} */}
     </MapContainer>
   );
 };
 
 export default Map;
-
