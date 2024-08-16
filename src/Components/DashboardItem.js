@@ -74,7 +74,7 @@ import RadarChartComponent from "./RadarChartComponent";
 
 import { toCSVText, getObjectItems, loess, getItemName } from "../utils/common";
 import { getFilters, getOuDimensions, getDimensions } from "../utils/filters";
-
+import SingleValueChart from "./SingleValueChart";
 import ShareModal from "./ShareModal";
 
 const apiBase = process.env.REACT_APP_BASE_URI;
@@ -126,7 +126,6 @@ function DashboardItem(props) {
         "api/maps/" +
         id +
         ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,colorScale,opacity,layer,thematicMapType,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
-        
     } else if (item.type == "TEXT") {
       id = item._id;
       setChartInfo({ ...item });
@@ -157,107 +156,6 @@ function DashboardItem(props) {
 
           setLoading(false);
           return;
-          // data.type = "map";
-
-          //   const mapLayers = data.mapViews.map((view) => {
-          //     view = { ...data, ...view , type : "map"}
-          //     return view;
-          //   });
-
-          //   setChartInfo({...mapLayers, type : "map"});
-
-          //   mapLayers.forEach((mapLayer, index) => {
-          //     let dimension = "",
-          //       filters = "";
-
-          //     for (const filter of mapLayer.filters) {
-          //       if (
-          //         filter.dimension == "ou" &&
-          //         (props.filters?.orgunits?.length > 0 ||
-          //           props.filters?.orgunitGroup?.length > 0 ||
-          //           props.filters?.orgunitLevel?.length > 0)
-          //       ) {
-          //         continue;
-          //       }
-
-          //       filters += "&filter=" + filter.dimension;
-          //       if (filter.items.length > 0) {
-          //         let filterItemsId = getObjectItems(filter, "id");
-          //         let filterDimensionItems = getObjectItems(
-          //           filter,
-          //           "dimensionItem"
-          //         );
-          //         if (filterItemsId.length > 0) {
-          //           filters += ":" + filterItemsId.join(";");
-          //         }
-          //         if (filterDimensionItems.length > 0) {
-          //           filters += ":" + filterDimensionItems.join(";");
-          //         }
-          //       }
-          //     }
-
-          //     if (props?.filters) {
-          //       filters += "&filter=ou:";
-          //       filters += props?.filters.orgunitGroup
-          //         .map((g) => "OU_GROUP-" + g)
-          //         .join(";");
-          //       filters += props?.filters.orgunitLevel
-          //         .map((l) => "LEVEL-" + l)
-          //         .join(";");
-          //       filters += props?.filters.orgunits.join(";");
-          //     }
-
-          //     for (const col of mapLayer.columns) {
-          //       dimension += "dimension=";
-          //       dimension += col.dimension;
-          //       if (col.filter) {
-          //         dimension += ":" + col.filter;
-          //       }
-          //       if (col.items.length > 0) {
-          //         let colItemsId = getObjectItems(
-          //           col,
-          //           "id",
-          //           mapLayer.dataDimensionItems
-          //         );
-          //         let colDimensionItems = getObjectItems(col, "dimensionItem");
-          //         if (colItemsId.length > 0) {
-          //           dimension += ":" + colItemsId.join(";");
-          //         }
-          //         if (colDimensionItems.length > 0) {
-          //           dimension += ":" + colDimensionItems.join(";");
-          //         }
-          //       }
-          //     }
-
-          //     let ou_dimension;
-          //     for (const row of mapLayer.rows) {
-          //       dimension += "&dimension=";
-          //       dimension += row.dimension;
-          //       if (row.filter) {
-          //         dimension += ":" + row.filter;
-          //       }
-          //       if (row.items.length > 0) {
-          //         let rowItemsId = getObjectItems(row, "id");
-          //         let rowDimensionItems = getObjectItems(row, "dimensionItem");
-          //         if (rowItemsId.length > 0) {
-          //           dimension += ":" + rowItemsId.join(";");
-          //           if (row.dimension == "ou" && item.type == "MAP") {
-          //             ou_dimension = "ou:" + rowItemsId.join(";");
-          //           }
-          //         }
-          //         if (rowDimensionItems.length > 0) {
-          //           dimension += ":" + rowDimensionItems.join(";");
-          //         }
-          //       }
-          //     }
-          //   });
-
-          //   // data.type = "map";
-          // }
-
-          // if (data.type !== "map") {
-          //   setChartInfo(data);
-          // }
         }
 
         setChartInfo(data);
@@ -313,7 +211,7 @@ function DashboardItem(props) {
         }
 
         console.log("filters", filters);
-        url += dimension + filters;
+        url += dimension + filters + "&includeMetadataDetails=true";
 
         fetch(encodeURI(url))
           .then((response) => {
@@ -351,7 +249,6 @@ function DashboardItem(props) {
     }
     if (chartType === "text") return <TextChart item={item} />;
     if (mapData && mapData.type === "map") {
-      
       return (
         <MapComponent
           data={mapData}
@@ -872,7 +769,7 @@ function DashboardItem(props) {
             textColor="#000"
             arcsLength={[0.15, 0.1, 0.55]}
             colors={["#009688", "#CDDC39", "#F44336"]}
-            target={0.8}
+            target={chartInfo.targetLineValue}
             baseline={chartInfo.baseLineValue}
           />
           <span align="center">
@@ -900,6 +797,7 @@ function DashboardItem(props) {
           chartConfig={chartConfig}
         />
       );
+<<<<<<< HEAD
     }else if(chartInfo.type == "RADAR"){
       return (
         <RadarChartComponent
@@ -943,6 +841,10 @@ function DashboardItem(props) {
           <Typography>{title}</Typography>
         </div>
       );
+=======
+    } else if (chartInfo.type == "SINGLE_VALUE") {
+      return <SingleValueChart chartData={chartData} />;
+>>>>>>> d9e206cbce437316c9988179384f49a1e81e1b63
     } else {
       console.log("Unsupported chart type: " + chartType);
       return (
