@@ -901,7 +901,6 @@ function DashboardItem(props) {
         />
       );
     }else if(chartInfo.type == "RADAR"){
-      console.log("radar chart", chartData,"chartInfo", chartInfo,"item", item,"config", chartConfig);
       return (
         <RadarChartComponent
           key={item._id}
