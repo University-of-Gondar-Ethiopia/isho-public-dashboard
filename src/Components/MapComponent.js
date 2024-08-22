@@ -16,7 +16,7 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
       try {
         // Order mapViews by layer type
         const orderedMapViews = [...data.mapViews].sort((a, b) => {
-          const order = ["orgUnit", "facility", "thematic"];
+          const order = ["thematic", "orgUnit", "facility"];
           return order.indexOf(a.layer) - order.indexOf(b.layer);
         });
 
@@ -62,14 +62,14 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
     };
 
     fetchData();
-  }, [mainProps.filters, data.mapViews]);
+  }, [mainProps.filters, data, setMapData, setLoading, shapes]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   console.log("data", data);
-  console.log("shape",shapes)
+  console.log("shape", shapes);
 
   return (
     <Map
