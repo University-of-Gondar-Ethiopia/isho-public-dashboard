@@ -797,8 +797,7 @@ function DashboardItem(props) {
           chartConfig={chartConfig}
         />
       );
-<<<<<<< HEAD
-    }else if(chartInfo.type == "RADAR"){
+    } else if (chartInfo.type == "RADAR") {
       return (
         <RadarChartComponent
           key={item._id}
@@ -808,43 +807,8 @@ function DashboardItem(props) {
           chartConfig={chartConfig}
         />
       );
-    }
-     else if (chartInfo.type == "SINGLE_VALUE") {
-      let title =
-        chartData &&
-        chartData.rows &&
-        chartData.rows[0] &&
-        chartData.rows[0][0] &&
-        chartData.metaData.items[chartData.rows[0][0]]
-          ? chartData.metaData.items[chartData.rows[0][0]]?.name
-          : "";
-      return (
-        <div
-          style={{
-            minHeight: "100%",
-            alignItems: "center",
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-          }}
-        >
-          <Typography
-            display="flex"
-            alignItems="center"
-            component="div"
-            variant="h1"
-            color="primary"
-          >
-            {chartData.rows[0][1] + "%"}
-          </Typography>
-
-          <Typography>{title}</Typography>
-        </div>
-      );
-=======
     } else if (chartInfo.type == "SINGLE_VALUE") {
       return <SingleValueChart chartData={chartData} />;
->>>>>>> d9e206cbce437316c9988179384f49a1e81e1b63
     } else {
       console.log("Unsupported chart type: " + chartType);
       return (
