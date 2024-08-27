@@ -70,6 +70,7 @@ import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
 import ScatterChartComponent from "./ScatterChartComponent";
 import MapComponent from "./MapComponent";
+import RadarChartComponent from "./RadarChartComponent";
 
 import { toCSVText, getObjectItems, loess, getItemName } from "../utils/common";
 import { getFilters, getOuDimensions, getDimensions } from "../utils/filters";
@@ -770,6 +771,16 @@ function DashboardItem(props) {
     } else if (chartInfo.type == "SCATTER") {
       return (
         <ScatterChartComponent
+          key={item._id}
+          chartData={chartData}
+          chartInfo={chartInfo}
+          item={item}
+          chartConfig={chartConfig}
+        />
+      );
+    } else if (chartInfo.type == "RADAR") {
+      return (
+        <RadarChartComponent
           key={item._id}
           chartData={chartData}
           chartInfo={chartInfo}
