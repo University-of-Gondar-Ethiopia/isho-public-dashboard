@@ -1,92 +1,3 @@
-// import React from "react";
-// import { EChart } from "@kbox-labs/react-echarts";
-// import { HeatmapChart, CustomChart } from "echarts/charts";
-// import { CanvasRenderer } from "echarts/renderers";
-// import { GridComponent } from "echarts/components";
-
-// const Map = () => {
-//   const coordinates = [
-//     [
-//       [100, 0], // Example polygon coordinates
-//       [101, 0],
-//       [101, 1],
-//       [100, 1],
-//       [100, 0],
-//     ],
-//     // Add more polygons as needed
-//   ];
-
-//   const option = {
-//     title: {
-//       text: "map component coming soon",
-//       subtext: "test",
-//       sublink: "",
-//       left: "right",
-//     },
-//     series: [
-//       {
-//         type: "custom",
-//         coordinateSystem: "geo",
-//         renderItem: (params, api) => {
-//           const points = [];
-//           for (let i = 0; i < coordinates.length; i++) {
-//             const coord = coordinates[i].map((coord) => api.coord(coord));
-//             points.push(coord);
-//           }
-//           return {
-//             type: "polygon",
-//             shape: {
-//               points: points,
-//             },
-//             style: {
-//               fill: "#f00",
-//             },
-//           };
-//         },
-//       },
-//     ],
-//   };
-
-//   return (
-//     <div style={{ width: "100%", height: "500px" }}>
-//       here is the map component
-//       <EChart
-//         use={[CanvasRenderer, GridComponent]}
-//         option={option}
-//         series={[
-//           {
-//             type: "custom",
-//             coordinateSystem: "geo",
-//             renderItem: (params, api) => {
-//               const points = [];
-//               for (let i = 0; i < coordinates.length; i++) {
-//                 const coord = coordinates[i].map((coord) => api.coord(coord));
-//                 points.push(coord);
-//               }
-//               return {
-//                 type: "polygon",
-//                 shape: {
-//                   points: points,
-//                 },
-//                 style: {
-//                   fill: "#f00",
-//                 },
-//               };
-//             },
-//           },
-//         ]}
-//       />
-//     </div>
-//   );
-// };
-
-// export default Map;
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import {
@@ -100,11 +11,22 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import { FormControl, InputLabel, MenuItem, Select, SvgIcon } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  SvgIcon,
+} from "@mui/material";
 import ReactDOMServer from "react-dom/server";
-import { Home as HomeIcon, LocalHospital as LocalHospitalIcon, Room as RoomIcon } from "@mui/icons-material";
+import {
+  Home as HomeIcon,
+  LocalHospital as LocalHospitalIcon,
+} from "@mui/icons-material";
 import Legend from "./Legend";
 import { useMapLogic } from "../hooks/useMapLogic";
+import RoomIcon from "@mui/icons-material/ControlPoint";
+import HealthPostIcon from "@mui/icons-material/MedicalInformation";
 
 const TileLayerControl = ({ tileLayer, setTileLayer, tileLayers }) => {
   const map = useMap();
@@ -158,7 +80,10 @@ const createCustomIcon = (iconComponent, color) =>
   });
 
 const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
-  const [tileLayer, setTileLayer] = useState(basemap === 'none' ? "osm" : basemap);
+  const [tileLayer, setTileLayer] = useState(
+    basemap === "none" ? "osm" : basemap
+  );
+  const legendData = [];
   console.log("tile layer", tileLayer);
 
   const tileLayers = {
@@ -173,10 +98,11 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
         '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors',
     },
     osmLight: {
-      url: "https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}.png",
+      url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
       attribution:
-        '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
     },
+
     darkBaseMap: {
       url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
       attribution:
@@ -195,32 +121,56 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
 
   if (!mapBounds) return null;
 
-  const renderFacilityMarkers = (viewData) =>
-    viewData.sortedShape.map((region, regionIndex) => {
+  const renderFacilityMarkers = (viewData) => {
+    legendData.push({
+      name: "facility",
+      hospital: 0,
+      clinic: 0,
+      post: 0,
+      center: 0,
+    });
+
+    return viewData.sortedShape.map((region, regionIndex) => {
       const coordinates = parseCoordinates(region.co);
       const [lat, lng] = coordinates[0][0];
       const regionType = region.na.split(" ").pop().toLowerCase();
+      const currentLegendData = legendData[legendData.length - 1];
+
+      if (currentLegendData.hasOwnProperty(regionType)) {
+        currentLegendData[regionType] += 1;
+      } else {
+        currentLegendData["center"] += 1;
+      }
 
       const markerIcons = {
         hospital: createCustomIcon(LocalHospitalIcon, "red"),
         clinic: createCustomIcon(RoomIcon, "red"),
-        healthpost: createCustomIcon(RoomIcon, "blue"),
+        healthpost: createCustomIcon(HealthPostIcon, "blue"),
         healthcenter: createCustomIcon(HomeIcon, "green"),
       };
 
       const markerIcon = markerIcons[regionType] || markerIcons.healthcenter;
 
       return (
-        <Marker key={`${region.id}-${regionIndex}`} position={[lat, lng]} icon={markerIcon}>
+        <Marker
+          key={`${region.id}-${regionIndex}`}
+          position={[lat, lng]}
+          icon={markerIcon}
+        >
           <Popup>
             <span>{region.na}</span>
           </Popup>
         </Marker>
       );
     });
+  };
 
-  const renderOrgUnitPolygons = (viewData) =>
-    viewData.sortedShape.map((region, regionIndex) => {
+  const renderOrgUnitPolygons = (viewData) => {
+    legendData.push({
+      name: "orgUnit",
+    });
+
+    return viewData.sortedShape.map((region, regionIndex) => {
       const coordinates = parseCoordinates(region.co);
       const opacity = 0;
 
@@ -251,11 +201,34 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
         </Polygon>
       ));
     });
+  };
 
-  const renderThematicPolygons = (viewData) =>
-    viewData.sortedShape.map((region, regionIndex) => {
+  const renderThematicPolygons = (viewData) => {
+    console.log("hidden thematic", viewData);
+    const legendMn = Math.min(
+      ...viewData.mapData.map((d) => Math.min(...d.data))
+    );
+    const legendMx = Math.max(
+      ...viewData.mapData.map((d) => Math.max(...d.data))
+    );
+    const legendNumColors = viewData.regionColors?.length || 0;
+    const legendRegionColors = viewData.regionColors || [];
+    console.log("mx and mn", legendMx, legendMn);
+    legendData.push({
+      name: "thematic",
+      displayName: viewData.displayName,
+      colorScaleArray: viewData.colorScaleArray,
+      mn: legendMn,
+      mx: legendMx,
+      numColors: legendNumColors,
+      regionColors: legendRegionColors,
+    });
+
+    return viewData.sortedShape.map((region, regionIndex) => {
       const coordinates = parseCoordinates(region.co);
-      const regionColor = viewData.regionColors.find((rc) => rc.region === region.na);
+      const regionColor = viewData.regionColors.find(
+        (rc) => rc.region === region.na
+      );
       const color = regionColor ? regionColor.color : "";
       const opacity = color ? viewData.opacity : 0;
 
@@ -289,14 +262,18 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
         </Polygon>
       ));
     });
-
+  };
   return (
     <MapContainer bounds={mapBounds} style={{ height: "100%", width: "100%" }}>
       <TileLayer
         url={tileLayers[tileLayer].url}
         attribution={tileLayers[tileLayer].attribution}
       />
-      <TileLayerControl tileLayer={tileLayer} setTileLayer={setTileLayer} tileLayers={tileLayers} />
+      <TileLayerControl
+        tileLayer={tileLayer}
+        setTileLayer={setTileLayer}
+        tileLayers={tileLayers}
+      />
 
       {parsedMapViews.map((viewData) => {
         switch (viewData?.layer) {
@@ -311,25 +288,9 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
         }
       })}
 
-      
-      {/* <Legend
-        colorScaleArray={parsedMapViews[0]?.colorScaleArray}
-        mn={Math.min(
-          ...parsedMapViews.map((v) =>
-            Math.min(...v?.mapData.map((d) => Math.min(...d.data)))
-          )
-        )}
-        mx={Math.max(
-          ...parsedMapViews.map((v) =>
-            Math.max(...v?.mapData.map((d) => Math.max(...d.data)))
-          )
-        )}
-        numColors={parsedMapViews[0]?.regionColors?.length || 0}
-        regionColors={parsedMapViews[0]?.regionColors || []}
-      /> */}
+      <Legend legendDatas={legendData} />
     </MapContainer>
   );
 };
 
 export default Map;
-

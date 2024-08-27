@@ -9,14 +9,14 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
   const [isLoading, setIsLoading] = useState(true);
   const snackbar = useSnackbar();
   const [chartData, setChartData] = useState({});
-  let url = process.env.REACT_APP_BASE_URI;
+  let url = apiBase + "api/40/analytics.json?";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Order mapViews by layer type
         const orderedMapViews = [...data.mapViews].sort((a, b) => {
-          const order = ["orgUnit", "facility", "thematic"];
+          const order = ["thematic", "orgUnit", "facility"];
           return order.indexOf(a.layer) - order.indexOf(b.layer);
         });
 
@@ -30,24 +30,35 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
 
           const response = await fetch(encodeURI(geoFeaturesUrl));
           const shapeData = await response.json();
-
-          url += "api/40/analytics.json?" + dimension + filters;
-          fetch(encodeURI(url))
-            .then((response) => response.json())
-            .then((analyticsData) => {
+          if (view.layer != "orgUnit") {
+            try {
+              url += dimension + filters;
+              let analyticsData = await fetch(encodeURI(url));
+              let chartData = await analyticsData.json();
               console.log("chartData", analyticsData);
-
               setChartData((prevChartData) => ({
                 ...prevChartData,
-                [view.id]: analyticsData,
+                [view.id]: chartData,
               }));
-              setLoading(false);
-            })
-            .catch((error) => {
-              setLoading(false);
-            });
+            } catch (error) {
+              console.error("Error fetching data:", error);
+              snackbar.showMessage(
+                "Error fetching data",
+                undefined,
+                undefined,
+                {
+                  type: "error",
+                }
+              );
+            }
+          }
+          setLoading(false);
+          setShapes((prevShapes) => ({
+            ...prevShapes,
+            [view.id]: shapeData,
+          }));
 
-          setShapes((prevShapes) => ({ ...prevShapes, [view.id]: shapeData }));
+          console.log(view, filters, dimension, "log image");
         });
 
         await Promise.all(promises);
@@ -55,21 +66,23 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
-        snackbar.showMessage("Error fetching data");
+        snackbar.showMessage("Error fetching data", undefined, undefined, {
+          type: "error",
+        });
         setLoading(false);
         setIsLoading(false);
       }
     };
 
     fetchData();
-  }, [mainProps.filters, data.mapViews]);
+  }, [mainProps.filters, data, setMapData, setLoading, setShapes]);
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   console.log("data", data);
-  console.log("shape",shapes)
+  console.log("shape", shapes);
 
   return (
     <Map

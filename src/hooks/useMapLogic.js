@@ -111,7 +111,7 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
     return Math.abs(area / 2);
   };
 
-  const processMapLayer = (chartConfig, shape, colorScale, opacity, layer) => {
+  const processMapLayer = (chartConfig, displayName, shape, colorScale, opacity, layer) => {
     console.log("inner chart config", chartConfig, layer);
     const mapData = chartConfig?.series;
     const regionList = chartConfig?.yAxis?.categories;
@@ -169,6 +169,7 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
 
     return {
       sortedShape,
+      displayName,
       regionColors,
       colorScaleArray,
       regionList,
@@ -188,6 +189,7 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
     console.log("view", "shape", shapes[view.id], view);
     return processMapLayer(
       chartConfig,
+      view?.displayName,
       shapes[view.id],
       view?.colorScale,
       view?.opacity,

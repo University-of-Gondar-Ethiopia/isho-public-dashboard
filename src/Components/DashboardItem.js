@@ -177,25 +177,6 @@ function DashboardItem(props) {
         ) {
           id = item.visualization.id;
           url += "api/analytics.json?";
-          // } else if (item.type === "MAP") {
-          //   // console.log("here is called");
-          //   id = item.map.id;
-          //   url += "api/analytics.json?";
-          //   //load shape data
-          //   let geoFeatures =
-          //     apiBase +
-          //     "api/geoFeatures.json?" +
-          //     "ou=" +
-          //     ou_dimension +
-          //     "&displayProperty=NAME";
-          //   console.log(geoFeatures);
-          //   fetch(encodeURI(geoFeatures))
-          //     .then((response) => {
-          //       return response.json();
-          //     })
-          //     .then((shapeData) => {
-          //       setShape(shapeData);
-          //     });
         } else if (item.type === "EVENT_CHART") {
           id = item.eventChart.id;
           url +=
