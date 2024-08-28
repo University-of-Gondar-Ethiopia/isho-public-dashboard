@@ -152,8 +152,6 @@ function DashboardItem(props) {
           data.type = "map";
           console.log("map origin", data);
           setMapData({ ...data });
-          // data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers
-
           setLoading(false);
           return;
         }
@@ -444,66 +442,6 @@ function DashboardItem(props) {
             </LineChart>
           );
         }
-        console.log("here too", chartType);
-        // if (chartType === "map" && shape) {
-        //   console.log("It is called", shape);
-        //   console.log("chartConfigInside", chartConfig);
-        //   console.log("chartDataInside", chartData);
-        //   console.log("chartInfoInside", chartInfo);
-        //   // const mapComponents = chartInfo.map((mapLayer, index) => {
-        //   //   console.log("mapLayer", mapLayer);
-        //   //   const { layer, colorScale, opacity } = mapLayer;
-
-        //   //   if (layer === "orgUnit") {
-        //   //     return (
-        //   //       <Map
-        //   //         key={`orgUnit-${index}`}
-        //   //         chartConfig={chartConfig}
-        //   //         shape={shape}
-        //   //         colorScale={colorScale}
-        //   //         opacity={0}
-        //   //       />
-        //   //     );
-        //   //   } else if (layer === "thematic") {
-        //   //     return (
-        //   //       <Map
-        //   //         key={`thematic-${index}`}
-        //   //         chartConfig={chartConfig}
-        //   //         shape={shape}
-        //   //         colorScale={colorScale}
-        //   //         opacity={opacity}
-        //   //       />
-        //   //     );
-        //   //   }
-        //   //   return null;
-        //   // });r
-
-        //   // return <>{mapComponents}</>;
-
-        //   let layer = chartInfo.layer;
-        //   let colorScale = chartInfo.colorScale;
-        //   let opacity = chartInfo.opacity;
-        //   if (layer == "orgUnit") {
-        //     console.log("finally got here");
-        //     return (
-        //       <Map
-        //         chartConfig={chartConfig}
-        //         shape={shape}
-        //         colorScale={colorScale}
-        //         opacity={0}
-        //       />
-        //     );
-        //   } else if (layer == "thematic") {
-        //     return (
-        //       <Map
-        //         chartConfig={chartConfig}
-        //         shape={shape}
-        //         colorScale={colorScale}
-        //         opacity={opacity}
-        //       />
-        //     );
-        //   }
-        // }
         if (chartType === "text") return <TextChart item={item} />;
         if (chartType === "bar") {
           return (
