@@ -69,64 +69,26 @@ import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
 import ScatterChartComponent from "./ScatterChartComponent";
+import MapComponent from "./MapComponent";
+import RadarChartComponent from "./RadarChartComponent";
 
-import * as science from "science";
+import { toCSVText, getObjectItems, loess, getItemName } from "../utils/common";
+import { getFilters, getOuDimensions, getDimensions } from "../utils/filters";
+import SingleValueChart from "./SingleValueChart";
 import ShareModal from "./ShareModal";
-// LOESS function
-const loess = function (xval, yval, bandwidth) {
-  return science.stats.loess().bandwidth(bandwidth)(xval, yval);
-};
 
 const apiBase = process.env.REACT_APP_BASE_URI;
 
 const dimensionParam =
   "dimension,filter,programStage,items[dimensionItem,dimensionItemType]";
 
-const getObjectItems = function (obj, prop, dataDimensionItems) {
-  let res = [];
-  if (dataDimensionItems) {
-    for (let i = 0; i < obj.items.length; i++) {
-      const item = obj.items[i];
-      if (
-        item[prop] &&
-        dataDimensionItems[i] &&
-        dataDimensionItems[i].reportingRate &&
-        dataDimensionItems[i].reportingRate.dimensionItem
-      ) {
-        res.push(dataDimensionItems[i].reportingRate.dimensionItem);
-      } else if (item[prop]) {
-        res.push(item[prop]);
-      }
-    }
-  } else
-    for (const item of obj.items) {
-      if (item[prop]) {
-        res.push(item[prop]);
-      }
-    }
-
-  return res;
-};
-
-const getItemName = function (obj, key) {
-  if (
-    obj &&
-    obj.metaData &&
-    obj.metaData.items &&
-    obj.metaData.items[key] &&
-    obj.metaData.items[key].name
-  ) {
-    return obj.metaData.items[key].name;
-  }
-  return key;
-};
-
 function DashboardItem(props) {
   const [chartInfo, setChartInfo] = React.useState();
   const [chartData, setChartData] = React.useState();
   const [loading, setLoading] = React.useState(true);
   const snackbar = useSnackbar();
-  const [ouDimension, setOuDimension] = React.useState(); // set ou dimention for loading the shapes
+  const [mapData, setMapData] = React.useState();
+
   const [shape, setShape] = React.useState(null);
   const [customeChartType, setCustomChartType] = React.useState(undefined);
 
@@ -144,7 +106,7 @@ function DashboardItem(props) {
       url +=
         "api/visualizations/" +
         id +
-        ".json?fields=id,aggregationType,displayName,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
+        ".json?fields=id,displayName,aggregationType,dataDimensionItems,targetLineValue,axes,regressionType,targetLineLabel,baseLineValue,baseLineLabel,type,columns[:all],columnDimensions[:all],filters[:all],rows[:all]";
     } else if (item.type === "EVENT_CHART") {
       id = item.eventChart.id;
       url +=
@@ -159,10 +121,11 @@ function DashboardItem(props) {
         "]";
     } else if (item.type == "MAP") {
       id = item.map.id;
+      console.log("map id", id);
       url +=
         "api/maps/" +
         id +
-        ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
+        ".json?fields=id,displayName,latitude,zoom,basemap,mapViews[id,colorScale,opacity,layer,thematicMapType,displayName,type,displayDescription,columns[dimension,legendSet[id],filter,programStage,items[dimensionItem~rename(id),displayName~rename(name),dimensionItemType]],rows[:all],filters[:all]]";
     } else if (item.type == "TEXT") {
       id = item._id;
       setChartInfo({ ...item });
@@ -184,109 +147,26 @@ function DashboardItem(props) {
       })
       .then((data) => {
         if (item.type == "MAP") {
-          data = data.mapViews.length > 0 ? data.mapViews[0] : data; // TODO add support for mulitple layers && aggregationType
           data.type = "map";
+          console.log("map origin", data);
+          setMapData({ ...data });
+          setLoading(false);
+          return;
         }
 
         setChartInfo(data);
 
-        let dimension = "",
-          filters = "";
-
-        for (const filter of data.filters) {
-          if (
-            filter.dimension == "ou" &&
-            (props.filters?.orgunits?.length > 0 ||
-              props.filters?.orgunitGroup?.length > 0 ||
-              props.filters?.orgunitLevel?.length > 0)
-          ) {
-            continue;
-          }
-
-          filters += "&filter=" + filter.dimension;
-          if (filter.items.length > 0) {
-            let filterItemsId = getObjectItems(filter, "id");
-
-            let filterDimensionItems = getObjectItems(filter, "dimensionItem");
-            if (filterItemsId.length > 0) {
-              filters += ":" + filterItemsId.join(";");
-            }
-            if (filterDimensionItems.length > 0) {
-              filters += ":" + filterDimensionItems.join(";");
-            }
-          }
-        }
-        if (
-          props?.filters &&
-          ((props.filters.orgunits && props.filters.orgunits.length > 0) ||
-            (props.filters.orgunitGroup &&
-              props.filters.orgunitGroup.length > 0) ||
-            (props.filters.orgunitLevel &&
-              props.filters.orgunitLevel.length > 0))
-        ) {
-          filters += "&filter=ou:";
-
-          filters += props?.filters.orgunitGroup
-            .map((g) => "OU_GROUP-" + g)
-            .join(";");
-
-          filters += props?.filters.orgunitLevel
-            .map((l) => "LEVEL-" + l)
-            .join(";");
-
-          filters += props?.filters.orgunits.join(";");
-        }
-
-        if (data.aggregationType)
-          filters += "&aggregationType=" + data.aggregationType;
-
-        for (const col of data.columns) {
-          dimension += "dimension=";
-          dimension += col.dimension;
-
-          if (col.filter) {
-            dimension += ":" + col.filter;
-          }
-
-          if (col.items.length > 0) {
-            let colItemsId = getObjectItems(col, "id", data.dataDimensionItems);
-
-            let colDimensionItems = getObjectItems(col, "dimensionItem");
-            if (colItemsId.length > 0) {
-              dimension += ":" + colItemsId.join(";");
-            }
-            if (colDimensionItems.length > 0) {
-              dimension += ":" + colDimensionItems.join(";");
-            }
-          }
-        }
-
-        let ou_dimension;
-        for (const row of data.rows) {
-          dimension += "&dimension=";
-          dimension += row.dimension;
-
-          if (row.filter) {
-            dimension += ":" + row.filter;
-          }
-
-          if (row.items.length > 0) {
-            let rowItemsId = getObjectItems(row, "id");
-            let rowDimensionItems = getObjectItems(row, "dimensionItem");
-
-            if (rowItemsId.length > 0) {
-              dimension += ":" + rowItemsId.join(";");
-              if (row.dimension == "ou" && item.type == "MAP") {
-                ou_dimension = "ou:" + rowItemsId.join(";");
-              } // orgunit dimentions loading shapes from the API
-            }
-            if (rowDimensionItems.length > 0) {
-              dimension += ":" + rowDimensionItems.join(";");
-            }
-          }
-        }
+        let filters = getFilters(
+          data.filters,
+          props?.filters,
+          data?.aggregationType
+        );
+        let dimension = getDimensions(data);
+        let ou_dimension = getOuDimensions(data.rows, { type: "map" });
 
         let url = apiBase;
+        console.log("item here", item);
+
         if (
           item.type === "VISUALIZATION" ||
           item.type === "CHART" ||
@@ -294,24 +174,6 @@ function DashboardItem(props) {
         ) {
           id = item.visualization.id;
           url += "api/analytics.json?";
-        } else if (item.type === "MAP") {
-          id = item.map.id;
-          url += "api/analytics.json?";
-          //load shape data
-          let geoFeatures =
-            apiBase +
-            "api/geoFeatures.json?" +
-            "ou=" +
-            ou_dimension +
-            "&displayProperty=NAME";
-          console.log(geoFeatures);
-          fetch(encodeURI(geoFeatures))
-            .then((response) => {
-              return response.json();
-            })
-            .then((shapeData) => {
-              setShape(shapeData);
-            });
         } else if (item.type === "EVENT_CHART") {
           id = item.eventChart.id;
           url +=
@@ -325,7 +187,8 @@ function DashboardItem(props) {
           return;
         }
 
-        url += dimension + filters;
+        console.log("filters", filters);
+        url += dimension + filters + "&includeMetadataDetails=true";
 
         fetch(encodeURI(url))
           .then((response) => {
@@ -356,50 +219,24 @@ function DashboardItem(props) {
   item.id = id;
   let chartConfig = {};
 
-  const toCSVText = (chartConfig) => {
-    if (!chartConfig) return "";
-
-    let csvString = title + "\n,";
-
-    if (chartConfig.data) {
-      // it is a pie chart
-      csvString +=
-        "\n" +
-        chartConfig.data.reduce(
-          (alldata, data) => alldata + data.label + "," + data.value + "\n",
-          ""
-        );
+  const renderChart = () => {
+    console.log("entrance", chartType, chartData, shape, chartInfo);
+    if (chartType == "resources") {
+      return <ResourceComponent resourcesItems={chartInfo.resources} />;
     }
-
-    if (chartConfig.yAxis) {
-      // it is not a pie chart
-
-      csvString +=
-        chartConfig.series.reduce((x, y) => y.label + "," + x, "") + "\n"; // table header
-
-      csvString += chartConfig.yAxis.categories.reduce(
-        (alldata, category, i) => {
-          return (
-            alldata +
-            category +
-            "," +
-            chartConfig.series.reduce((y, series, seriesIndex) => {
-              let retString = y;
-              if (series.data[i]) retString += series.data[i] + ",";
-              else retString += ",";
-              return retString;
-            }, "") +
-            "\n"
-          );
-        },
-        ""
+    if (chartType === "text") return <TextChart item={item} />;
+    if (mapData && mapData.type === "map") {
+      return (
+        <MapComponent
+          data={mapData}
+          setMapData={setMapData}
+          mainProps={props}
+          setLoading={setLoading}
+          setChartData={setChartData}
+        />
       );
     }
 
-    return csvString;
-  };
-
-  const renderChart = () => {
     if (!chartData) {
       return <span style={{ color: "#DDD" }}>No Data Available</span>;
     }
@@ -426,20 +263,15 @@ function DashboardItem(props) {
       }
     }
 
-    if (chartType == "resources") {
-      return <ResourceComponent resourcesItems={chartInfo.resources} />;
-    }
-    if (chartType === "text") return <TextChart item={item} />;
-
     // sort rows
     const rows = chartData.rows?.toSorted((a, b) => {
       let avalue = Number(a.length > 1 ? a[1] : a[0]);
       let bvalue = Number(b.length > 1 ? b[1] : b[0]);
       return avalue - bvalue;
     });
+    console.log("second entrance", chartType);
 
     chartType = customeChartType ?? chartType;
-
     if (chartType === "pie") {
       chartConfig = {
         colorByPoint: true,
@@ -496,6 +328,7 @@ function DashboardItem(props) {
 
       let columnSeries = {};
       let categories = [];
+      console.log("here chart Data", chartData, chartType);
       if (chartData) {
         for (const row of rows) {
           let n = getItemName(chartData, row[0]);
@@ -607,11 +440,6 @@ function DashboardItem(props) {
             </LineChart>
           );
         }
-
-        if (chartType === "map") {
-          return <Map chartConfig={chartConfig} shape={shape} />;
-        }
-
         if (chartType === "text") return <TextChart item={item} />;
         if (chartType === "bar") {
           return (
@@ -938,6 +766,8 @@ function DashboardItem(props) {
           <Typography>{title}</Typography>
         </div>
       );
+    } else if (chartInfo.type == "SINGLE_VALUE") {
+      return <SingleValueChart chartData={chartData} />;
     } else {
       console.log("Unsupported chart type: " + chartType);
       return (
@@ -1040,9 +870,9 @@ function DashboardItem(props) {
       }
     }
     if (type.toLowerCase() == "csv") {
-      let csvString = toCSVText(chartConfig);
+      let csvString = toCSVText(chartConfig, title);
       saveAs(
-        new Blob([toCSVText(chartConfig)], {
+        new Blob([toCSVText(chartConfig, title)], {
           type: "text/plain;charset=utf-8",
         }),
         "downloaded_csv.csv"
@@ -1050,7 +880,7 @@ function DashboardItem(props) {
     }
 
     if (type.toLowerCase() == "excel") {
-      let csvString = toCSVText(chartConfig);
+      let csvString = toCSVText(chartConfig, title);
       let json_data = await csvtojson().fromString(csvString);
       let ws = XLSX.utils.json_to_sheet(json_data);
       let wb = XLSX.utils.book_new();
@@ -1297,6 +1127,7 @@ function DashboardItem(props) {
 }
 
 function DashboardItems(props) {
+  console.log("first props", props);
   if (props?.items?.length == 0) {
     return <div>Empty Dashboard</div>;
   }

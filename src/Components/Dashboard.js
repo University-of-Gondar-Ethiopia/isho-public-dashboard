@@ -20,6 +20,26 @@ import SecondaryListItems from "./SecondaryListItems";
 import theme from "../theme";
 import Copyright from "./Copyright";
 
+// import MapChart from "./MapChart";
+
+function Copyright(props) {
+  return (
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      align="center"
+      {...props}
+    >
+      {"Copyright © "}
+      <Link color="inherit" href="https://habtechsolution.com/">
+        HABTech Solution
+      </Link>{" "}
+      {new Date().getFullYear()}
+      {"."}
+    </Typography>
+  );
+}
+
 const drawerWidth = 240;
 
 const AppBar = styled(MuiAppBar, {
@@ -66,6 +86,36 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
+// TODO remove, this demo shouldn't need to reset the theme.
+const defaultTheme = createTheme();
+
+const chartData = {
+  headers: [
+    { name: "id" },
+    { name: "name" },
+    { name: "latitude" },
+    { name: "longitude" },
+    { name: "value" },
+  ],
+  metaData: {
+    dimensions: {
+      pe: ["202107", "202108"],
+      dx: ["dataElement1", "dataElement2"],
+    },
+  },
+  rows: [
+    ["1", "Location 1", "34.052235", "-118.243683", "5.0"],
+    ["2", "Location 2", "40.712776", "-74.005974", "10.0"],
+    ["3", "Location 3", "51.507351", "-0.127758", "15.0"],
+    ["4", "Location 4", "48.856613", "2.352222", "20.0"],
+    ["5", "Location 5", "35.689487", "139.691711", "25.0"],
+  ],
+};
+
+const chartInfo = {
+  title: "Sample Heatmap",
+  description: "This is a sample heatmap visualization.",
+};
 export default function Dashboard() {
   const [open, setOpen] = React.useState(false);
   const toggleDrawer = () => {
@@ -156,6 +206,9 @@ export default function Dashboard() {
                 selectedSavedChart={selectedSavedChart}
                 setSelectedSavedChart={setSelectedSavedChart}
               />
+              {/* ReactDOM.render(
+              <MapChart chartData={chartData} chartInfo={chartInfo} />,
+              document.getElementById('root') ); */}
             </Grid>
             <Copyright sx={{ pt: 4 }} />
           </Container>
