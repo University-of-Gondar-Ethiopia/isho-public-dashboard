@@ -15,6 +15,7 @@ import {
   MarkPlot,
   ChartsAxisHighlight,
 } from "@mui/x-charts";
+import RadarChartComponent from "./RadarChartComponent";
 import {
   lineElementClasses,
   markElementClasses,
@@ -861,7 +862,7 @@ function DashboardItem(props) {
             textColor="#000"
             arcsLength={[0.15, 0.1, 0.55]}
             colors={["#009688", "#CDDC39", "#F44336"]}
-            target={0.8}
+            target={chartInfo.targetLineValue}
             baseline={chartInfo.baseLineValue}
           />
           <span align="center">
@@ -882,6 +883,16 @@ function DashboardItem(props) {
     } else if (chartInfo.type == "SCATTER") {
       return (
         <ScatterChartComponent
+          key={item._id}
+          chartData={chartData}
+          chartInfo={chartInfo}
+          item={item}
+          chartConfig={chartConfig}
+        />
+      );
+    } else if (chartInfo.type == "RADAR") {
+      return (
+        <RadarChartComponent
           key={item._id}
           chartData={chartData}
           chartInfo={chartInfo}

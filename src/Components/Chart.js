@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import DashboardItems from "./DashboardItem";
 import { useSnackbar } from "material-ui-snackbar-provider";
-import OrgUnitFilterModal from "./OrgUnitFilterModal";
+import Filters from "./Filters";
 
 const apiBase = process.env.REACT_APP_BASE_URI;
 
@@ -159,10 +159,15 @@ export default function Chart({
               )}
             </Select>
           </FormControl>
-
-          <OrgUnitFilterModal onConfirmed={handelFilterSelect} />
         </Paper>
       </Grid>
+
+      <Filters
+        dashboard={dashboard}
+        handelFilterSelect={handelFilterSelect}
+        loading={loading}
+        dashboardMenuList={dashboardMenuList}
+      ></Filters>
 
       <DashboardItems
         savedReports={savedReports}
