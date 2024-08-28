@@ -31,8 +31,14 @@ const getFilters = function (dataFilter, orgunitFilter, aggregationType) {
   if (aggregationType) {
     filters += "&aggregationType=" + aggregationType;
   }
-
-  if (orgunitFilter) {
+  console.log("orgunit filter object", orgunitFilter);
+  if (
+    orgunitFilter &&
+    (orgunitFilter.orgunitGroup?.length > 0 ||
+      orgunitFilter.orgunitLevel?.length > 0 ||
+      orgunitFilter.orgunits?.length > 0)
+  ) {
+    console.log("orgunit filter object hit");
     filters += "&filter=ou:";
 
     filters += orgunitFilter.orgunitGroup.map((g) => "OU_GROUP-" + g).join(";");

@@ -239,28 +239,32 @@ function DashboardItem(props) {
           setChartData={setChartData}
         />
       );
-      // let layer = chartInfo.layer;
-      // let colorScale = chartInfo.colorScale;
-      // let opacity = chartInfo.opacity;
-      // if (layer == "orgUnit") {
-      //   console.log("finally got here");
-      //   return (
-      // <Map
-      //   chartConfig={chartConfig}
-      //   shape={shape}
-      //   colorScale={colorScale}
-      //   opacity={0}
-      // />
-      //   );
-      // }
     }
 
     if (!chartData) {
-      return <span style={{ color: "#DDD" }}>No Data</span>;
+      return <span style={{ color: "#DDD" }}>No Data Available</span>;
     }
 
-    if (chartData.status) {
-      return <Code>{JSON.stringify(chartData)}</Code>;
+    if (chartData.status || chartData?.rows?.length < 1) {
+      if (props?.filters?.hideEmptyCharts) {
+        if (
+          componentRef.current &&
+          componentRef.current?.parentElement &&
+          componentRef.current?.parentElement?.style
+        )
+          componentRef.current.parentElement.style.display = "none";
+        return null;
+      } else {
+        if (
+          componentRef.current &&
+          componentRef.current?.parentElement &&
+          componentRef.current?.parentElement?.style
+        )
+          componentRef.current.parentElement.style.display = "flex";
+        return (
+          <div>No data available: {JSON.stringify(chartData?.message)}</div>
+        );
+      }
     }
 
     // sort rows
