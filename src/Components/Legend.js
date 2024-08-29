@@ -156,7 +156,7 @@ const Legend = ({ legendDatas }) => {
 
     ReactDOM.render(legendContent, legendDiv);
 
-    const legendControl = L.control({ position: "bottomright" });
+    const legendControl = L.control({ position: "bottomleft" });
     legendControl.onAdd = () => legendDiv;
     legendControl.addTo(map);
 
