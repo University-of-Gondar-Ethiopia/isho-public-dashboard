@@ -7,7 +7,6 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
   const [hoveredRegion, setHoveredRegion] = useState(null);
   let mapBounds = null;
 
-
   const processChartData = (chartData) => {
     const chartConfig = {
       series: [],
@@ -111,7 +110,14 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
     return Math.abs(area / 2);
   };
 
-  const processMapLayer = (chartConfig, displayName, shape, colorScale, opacity, layer) => {
+  const processMapLayer = (
+    chartConfig,
+    displayName,
+    shape,
+    colorScale,
+    opacity,
+    layer
+  ) => {
     console.log("inner chart config", chartConfig, layer);
     const mapData = chartConfig?.series;
     const regionList = chartConfig?.yAxis?.categories;
@@ -134,6 +140,8 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
     } else {
       // colorScaleArray = []
     }
+
+    console.log("region color2", regionList, colorScale, colorScaleArray);
 
     const regionColors = regionList?.map((regionName, index) => {
       const value = combinedData[index];
@@ -191,7 +199,7 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
       chartConfig,
       view?.displayName,
       shapes[view.id],
-      view?.colorScale,
+      view?.colorScale ?? "#ffffd4,#fed98e,#fe9929,#d95f0e,#993404",
       view?.opacity,
       view.layer
     );
