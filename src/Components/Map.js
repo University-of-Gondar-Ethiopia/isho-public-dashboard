@@ -8,6 +8,7 @@ import {
   useMap,
   Marker,
   Popup,
+  Circle,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
@@ -80,6 +81,7 @@ const createCustomIcon = (iconComponent, color) =>
   });
 
 const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
+  console.log("mapViews here", mapViews);
   const [tileLayer, setTileLayer] = useState(
     basemap === "none" ? "osm" : basemap
   );
@@ -104,7 +106,7 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
     },
 
     darkBaseMap: {
-      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
+      url: null,
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://carto.com/attributions">CARTO</a>',
     },
@@ -263,26 +265,123 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
       ));
     });
   };
+
+  const renderBubbleMap = (viewData) => {
+    const legendMn = Math.min(
+      ...viewData.mapData.map((d) => Math.min(...d.data))
+    );
+    const legendMx = Math.max(
+      ...viewData.mapData.map((d) => Math.max(...d.data))
+    );
+
+    const legendRegionColors = viewData.regionColors || [];
+    console.log("mx and mn", legendMx, legendMn);
+
+    legendData.push({
+      name: "bubble",
+      displayName: viewData.displayName,
+      mn: legendMn,
+      mx: legendMx,
+      colorScaleArray: viewData.colorScaleArray,
+      regionColors: legendRegionColors,
+    });
+
+    return viewData?.sortedShape?.map((region, regionIndex) => {
+      const fetchedCoordinates = parseCoordinates(region.co);
+      let lat = 0,
+        lng = 0,
+        length = 0;
+      if (fetchedCoordinates.length > 0) {
+        fetchedCoordinates.forEach((coord) =>
+          coord.forEach((coordinates) => {
+            lat += coordinates[0];
+            lng += coordinates[1];
+            length += 1;
+          })
+        );
+      }
+      const coordinates = [lat / length, lng / length];
+
+      const regionListIndex = viewData.regionList.indexOf(region.na);
+
+      const dataValue =
+        regionListIndex !== -1 ? viewData.mapData[0].data[regionListIndex] : 0;
+
+      // radius based on the data value
+      const radius = (dataValue / (legendMx - legendMn)) * 70;
+
+      // color for the region
+      const regionColor = viewData.regionColors.find(
+        (rc) => rc.region === region.na
+      );
+      const color = regionColor ? regionColor.color : "#3388ff";
+      const opacity = viewData.opacity;
+
+      return (
+        <Circle
+          key={`${region.id}-${regionIndex}`}
+          center={coordinates}
+          radius={radius * 1000}
+          fillColor={color}
+          color="#000"
+          fillOpacity={opacity}
+          weight={1}
+          eventHandlers={{
+            mouseover: (e) => handleMouseEnter(e, region),
+            mouseout: (e) => handleMouseLeave(e),
+          }}
+        >
+          <Tooltip>
+            <span>
+              {region.na}
+              {viewData.regionList
+                .filter((name) => name === region.na)
+                .map((name, num) =>
+                  viewData.mapData.map((regionData) => (
+                    <li key={num}>
+                      {regionData.label}: {regionData.data[num]}
+                    </li>
+                  ))
+                )}
+            </span>
+          </Tooltip>
+        </Circle>
+      );
+    });
+  };
+
+  console.log("parsed_map order", parsedMapViews);
+
   return (
     <MapContainer bounds={mapBounds} style={{ height: "100%", width: "100%" }}>
-      <TileLayer
+      {/* <TileLayer
         url={tileLayers[tileLayer].url}
         attribution={tileLayers[tileLayer].attribution}
-      />
+      /> */}
       <TileLayerControl
         tileLayer={tileLayer}
         setTileLayer={setTileLayer}
         tileLayers={tileLayers}
       />
 
-      {parsedMapViews.map((viewData) => {
+      {parsedMapViews?.map((viewData) => {
+        console.log("view current", viewData);
         switch (viewData?.layer) {
           case "facility":
             return renderFacilityMarkers(viewData);
+
           case "orgUnit":
             return renderOrgUnitPolygons(viewData);
+
           case "thematic":
-            return renderThematicPolygons(viewData);
+            if (viewData?.thematicMapType === "BUBBLE") {
+              return renderBubbleMap(viewData);
+
+            } else if (viewData?.thematicMapType === "CHOROPLETH") {
+              return renderThematicPolygons(viewData);
+            }
+            break;
+
           default:
             return null;
         }

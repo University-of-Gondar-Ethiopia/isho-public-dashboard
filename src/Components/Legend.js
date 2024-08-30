@@ -10,20 +10,18 @@ import {
   Home as HomeIcon,
   LocalHospital as LocalHospitalIcon,
 } from "@mui/icons-material";
-import RoomIcon from '@mui/icons-material/ControlPoint';
-import HealthPostIcon from '@mui/icons-material/MedicalInformation';
+import RoomIcon from "@mui/icons-material/ControlPoint";
+import HealthPostIcon from "@mui/icons-material/MedicalInformation";
 
 const Legend = ({ legendDatas }) => {
-  // console.log("legend ___", legendDatas);
   const [showDetails, setShowDetails] = useState(false);
   const map = useMap();
 
-  let accumulatedLegendItems = []; 
+  let accumulatedLegendItems = [];
 
-  
   legendDatas.forEach((legendData, index) => {
     if (legendData.name === "thematic") {
-      const intervalCount = legendData.colorScaleArray.length / 3 + 1; // Number of intervals you want to display
+      const intervalCount = legendData.colorScaleArray.length / 3 + 1;
 
       let intervals;
 
@@ -86,8 +84,73 @@ const Legend = ({ legendDatas }) => {
           ))}
         </div>,
       ];
+    } else if (legendData.name === "bubble") {
+      const intervalCount = 5;
+      let intervals;
+
+      if (legendData.mn === legendData.mx) {
+        intervals = [{ start: legendData.mn, end: legendData.mn + 1 }];
+      } else {
+        const intervalSize = (legendData.mx - legendData.mn) / intervalCount;
+        intervals = Array.from({ length: intervalCount }, (_, i) => {
+          const start = legendData.mn + i * intervalSize;
+          const end = legendData.mn + (i + 1) * intervalSize;
+          return { start, end };
+        });
+      }
+
+      // radius and color for the midpoint of each interval
+      const bubbleData = intervals.map(({ start, end }, idx) => {
+        const midpoint = (start + end) / 2;
+        const radius = (idx + 1) * 20;
+        const color = chroma
+          .scale(legendData.colorScaleArray)
+          .domain([legendData.mn, legendData.mx])(midpoint)
+          .hex();
+        return { radius, color, start, end };
+      });
+
+      const maxRadius = Math.max(...bubbleData.map((b) => b.radius));
+
+      accumulatedLegendItems = [
+        ...accumulatedLegendItems,
+        <div
+          key={`bubble-${index}`}
+          style={{
+            position: "relative",
+            height: `${maxRadius + 50}px`,
+            overflow: "hidden",
+            padding: "10px",
+          }}
+        >
+          <b>{legendData.displayName}</b>
+          <Box
+            style={{ position: "relative", width: "100%", height: "100%" }}
+            marginBottom={"2rem"}
+          >
+            {bubbleData.reverse().map(({ radius, color, start, end }, idx) => (
+              <div
+                key={`bubble-${index}-${idx}`}
+                style={{
+                  width: `${radius}px`,
+                  height: `${radius}px`,
+                  borderRadius: "50%",
+                  backgroundColor: color,
+                  position: "absolute",
+                  left: "50%",
+                  transform: `translateX(-50%)`,
+                  bottom: 0,
+                  zIndex: idx,
+                  border: "1px solid #999",
+                  marginBottom: "10px",
+                }}
+                title={`${start.toFixed(2)} - ${end.toFixed(2)}`}
+              ></div>
+            ))}
+          </Box>
+        </div>,
+      ];
     } else if (legendData.name === "facility") {
-      // Accumulate the facility legend items
       accumulatedLegendItems.push(
         <div
           key={`facility-${index}`}
@@ -118,7 +181,6 @@ const Legend = ({ legendDatas }) => {
         </div>
       );
     } else if (legendData.name === "orgUnit") {
-      // Accumulate the orgUnit legend item
       accumulatedLegendItems.push(
         <div key={`orgUnit-${index}`}>
           <b>OrgUnit</b>
@@ -130,7 +192,6 @@ const Legend = ({ legendDatas }) => {
     }
   });
 
-  // console.log("accumulated", accumulatedLegendItems);
   const handleClick = () => {
     setShowDetails(!showDetails);
   };

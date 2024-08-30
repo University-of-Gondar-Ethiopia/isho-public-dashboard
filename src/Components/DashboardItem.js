@@ -34,7 +34,7 @@ import * as htmlToImage from "html-to-image";
 import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import * as csvtojson from "csvtojson";
-import Map from "./Map";
+
 
 import {
   Grid,
@@ -228,6 +228,7 @@ function DashboardItem(props) {
     }
     if (chartType === "text") return <TextChart item={item} />;
     if (mapData && mapData.type === "map") {
+      console.log("mapData_", mapData);
       return (
         <MapComponent
           data={mapData}
