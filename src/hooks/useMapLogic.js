@@ -115,7 +115,7 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
     shape,
     colorScale,
     opacity,
-    layer, 
+    layer,
     thematicMapType
   ) => {
     const mapData = chartConfig?.series;
@@ -138,6 +138,8 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
         .colors(numColors);
     }
 
+    console.log("region color2", regionList, colorScale, colorScaleArray);
+
     const regionColors = regionList?.map((regionName, index) => {
       const value = combinedData[index];
       const colorIndex = Math.floor(((value - mn) / range) * (numColors - 1));
@@ -147,8 +149,6 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
         color: colorScale && colorScaleArray[colorIndex],
       };
     });
-
-    // console.log("region issue", regionList, regionColors, chartConfig, colorScale)
 
     const sortedShape = shape.slice().sort((a, b) => {
       const areaA = parseCoordinates(a.co).reduce(
@@ -186,27 +186,28 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
   };
 
   const layerOrder = ["orgUnit", "thematic", "facility"];
-  const parsedMapViews = mapViews
-    .map((view) => {
-      console.log("view here", view, mapViews, chartDatas)
-      const chartConfig = processChartData(chartDatas[view.id]);
+  const parsedMapViews = mapViews.map((view) => {
+    console.log("view here", view, mapViews, chartDatas);
+    const chartConfig = processChartData(chartDatas[view.id]);
 
-      if (view.layer === "thematic" && chartConfig.series.length === 0) {
-        return null;
-      }
+    if (view.layer === "thematic" && chartConfig.series.length === 0) {
+      return null;
+    }
 
-      return processMapLayer(
-        chartConfig,
-        view?.displayName,
-        shapes[view.id],
-        view?.colorScale,
-        view?.opacity,
-        view.layer,
-        view?.thematicMapType
+    return processMapLayer(
+      chartConfig,
+      view?.displayName,
+      shapes[view.id],
+      view?.colorScale ?? "#ffffd4,#fed98e,#fe9929,#d95f0e,#993404",
+      view?.opacity,
+      view.layer,
+      view?.thematicMapType
+    )
+      .filter(Boolean)
+      .sort(
+        (a, b) => layerOrder.indexOf(a.layer) - layerOrder.indexOf(b.layer)
       );
-    })
-    .filter(Boolean)
-    .sort((a, b) => layerOrder.indexOf(a.layer) - layerOrder.indexOf(b.layer));
+  });
 
   return {
     parsedMapViews,

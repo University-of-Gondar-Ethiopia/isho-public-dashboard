@@ -31,6 +31,7 @@
     "material-ui-snackbar-provider": "^2.0.0",
     "react": "latest",
     "react-dom": "latest",
+    "react-ga4": "^2.1.0",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.23.0",
     "react-scripts": "latest",

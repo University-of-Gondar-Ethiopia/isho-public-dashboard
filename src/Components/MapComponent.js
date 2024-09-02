@@ -30,10 +30,12 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
 
           const response = await fetch(encodeURI(geoFeaturesUrl));
           const shapeData = await response.json();
-          if (view.layer != "orgUnit") {
+          if (view.layer == "thematic") {
             try {
-              url += dimension + filters;
-              let analyticsData = await fetch(encodeURI(url));
+              // url += dimension + filters;
+              let analyticsData = await fetch(
+                encodeURI(url + dimension + filters)
+              );
               let chartData = await analyticsData.json();
               console.log("chartData", analyticsData, chartData);
               setChartData((prevChartData) => ({
@@ -57,8 +59,6 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
             ...prevShapes,
             [view.id]: shapeData,
           }));
-
-          // console.log(view, filters, dimension, "log image");
         });
 
         await Promise.all(promises);
