@@ -106,7 +106,7 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
     },
 
     darkBaseMap: {
-      url: null,
+      url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://carto.com/attributions">CARTO</a>',
     },
