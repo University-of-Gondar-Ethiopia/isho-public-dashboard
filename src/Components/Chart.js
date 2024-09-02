@@ -13,6 +13,7 @@ import DashboardItems from "./DashboardItem";
 import Title from "./Title";
 import { useSnackbar } from "material-ui-snackbar-provider";
 import OrgUnitFilterModal from "./OrgUnitFilterModal";
+import ReactGA from "react-ga4";
 
 const apiBase = process.env.REACT_APP_BASE_URI;
 
@@ -98,6 +99,16 @@ export default function Chart({
     );
     setDashbaord(dashboard);
     setSelectedSavedChart(null);
+
+    // Send a custom event
+    ReactGA.event({
+      category: "select_dashboard",
+      action: "select_dashboard",
+      value: 1,
+      label: dashboard.name + "[" + dashboard.id + "]",
+      nonInteraction: false,
+      transport: "xhr",
+    });
 
     const newUrl = `${window.location.origin}${window.location.pathname}?dashboard=${dashboard.id}`;
     window.history.pushState({ path: newUrl }, "", newUrl);
