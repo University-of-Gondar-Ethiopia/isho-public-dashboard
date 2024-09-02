@@ -26,6 +26,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import { mainListItems } from "./listItems";
 import Chart from "./Chart";
 import SecondaryListItems from "./SecondaryListItems";
+import ReactGA from "react-ga4";
 
 function Copyright(props) {
   return (
@@ -95,6 +96,12 @@ const Drawer = styled(MuiDrawer, {
 const defaultTheme = createTheme();
 
 export default function RequestForm() {
+  ReactGA.send({
+    hitType: "pageview",
+    page: "/request-form",
+    title: "request for additional information",
+  });
+
   const form = React.useRef();
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");

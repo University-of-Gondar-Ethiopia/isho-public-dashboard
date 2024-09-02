@@ -17,6 +17,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import { mainListItems } from "./listItems";
 import Chart from "./Chart";
 import SecondaryListItems from "./SecondaryListItems";
+import ReactGA from "react-ga4";
 // import MapChart from "./MapChart";
 
 function Copyright(props) {
@@ -115,6 +116,12 @@ const chartInfo = {
 };
 
 export default function Dashboard() {
+  // Send pageview with a custom path
+  ReactGA.send({
+    hitType: "pageview",
+    page: "/",
+    title: "Dashboard Main page",
+  });
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
