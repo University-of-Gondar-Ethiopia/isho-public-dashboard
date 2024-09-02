@@ -14,7 +14,7 @@ import RoomIcon from '@mui/icons-material/ControlPoint';
 import HealthPostIcon from '@mui/icons-material/MedicalInformation';
 
 const Legend = ({ legendDatas }) => {
-  // console.log("legend ___", legendDatas);
+ 
   const [showDetails, setShowDetails] = useState(false);
   const map = useMap();
 

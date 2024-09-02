@@ -79,6 +79,31 @@ const createCustomIcon = (iconComponent, color) =>
     iconSize: [10, 10],
   });
 
+const WhiteTileLayer = L.GridLayer.extend({
+  createTile: function (coords) {
+    const tile = document.createElement("div");
+    tile.style.width = "256px";
+    tile.style.height = "256px";
+    tile.style.background = "white";
+    return tile;
+  },
+});
+
+const BlankWhiteLayer = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const whiteLayer = new WhiteTileLayer();
+    whiteLayer.addTo(map);
+
+    return () => {
+      map.removeLayer(whiteLayer);
+    };
+  }, [map]);
+
+  return null;
+};
+
 const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
   const [tileLayer, setTileLayer] = useState(
     basemap === "none" ? "osm" : basemap
@@ -107,6 +132,11 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
       url: "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
       attribution:
         '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="https://carto.com/attributions">CARTO</a>',
+    },
+    blankWhite: {
+      url: null,
+      attribution: "",
+      layer: new WhiteTileLayer(),
     },
   };
 
@@ -263,19 +293,28 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
       ));
     });
   };
+
+  const defaultBounds = L.latLngBounds([3.0, 33.0], [15.0, 48.0]);
   return (
-    <MapContainer bounds={mapBounds} style={{ height: "100%", width: "100%" }}>
-      <TileLayer
-        url={tileLayers[tileLayer].url}
-        attribution={tileLayers[tileLayer].attribution}
-      />
+    <MapContainer
+      bounds={mapBounds.isValid() ? mapBounds : defaultBounds}
+      style={{ height: "100%", width: "100%" }}
+    >
+      {tileLayer === "blankWhite" ? (
+        <BlankWhiteLayer />
+      ) : (
+        <TileLayer
+          url={tileLayers[tileLayer]?.url}
+          attribution={tileLayers[tileLayer]?.attribution}
+        />
+      )}
       <TileLayerControl
         tileLayer={tileLayer}
         setTileLayer={setTileLayer}
         tileLayers={tileLayers}
       />
 
-      {parsedMapViews.map((viewData) => {
+      {parsedMapViews?.map((viewData) => {
         switch (viewData?.layer) {
           case "facility":
             return renderFacilityMarkers(viewData);
