@@ -31,21 +31,37 @@ const getFilters = function (dataFilter, orgunitFilter, aggregationType) {
   if (aggregationType) {
     filters += "&aggregationType=" + aggregationType;
   }
-  console.log("orgunit filter object", orgunitFilter);
+
   if (
     orgunitFilter &&
-    (orgunitFilter.orgunitGroup?.length > 0 ||
-      orgunitFilter.orgunitLevel?.length > 0 ||
-      orgunitFilter.orgunits?.length > 0)
+    (orgunitFilter?.orgunitGroup?.length > 0 ||
+      orgunitFilter?.orgunitLevel?.length > 0 ||
+      orgunitFilter?.orgunits?.length > 0)
   ) {
     console.log("orgunit filter object hit");
     filters += "&filter=ou:";
 
-    filters += orgunitFilter.orgunitGroup.map((g) => "OU_GROUP-" + g).join(";");
+    if (orgunitFilter?.orgunitGroup?.length > 0) {
+      filters += orgunitFilter?.orgunitGroup
+        ?.map((g) => "OU_GROUP-" + g)
+        .join(";");
+    }
 
-    filters += orgunitFilter.orgunitLevel.map((l) => "LEVEL-" + l).join(";");
+    if (orgunitFilter?.orgunitLevel?.length > 0) {
+      filters += orgunitFilter?.orgunitLevel
+        ?.map((l) => "LEVEL-" + l)
+        .join(";");
+    }
 
-    filters += orgunitFilter.orgunits.join(";");
+    filters += orgunitFilter?.orgunits?.join(";");
+    console.log(
+      "orgunit filter object",
+      orgunitFilter,
+      filters,
+      orgunitFilter?.orgunits?.join(";"),
+      orgunitFilter?.orgunitLevel?.map((l) => "LEVEL-" + l).join(";"),
+      orgunitFilter?.orgunitGroup?.map((g) => "OU_GROUP-" + g).join(";")
+    );
   }
   return filters;
 };
