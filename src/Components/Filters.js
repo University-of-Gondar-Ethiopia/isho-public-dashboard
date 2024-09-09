@@ -11,49 +11,33 @@ import {
   CircularProgress,
 } from "@mui/material";
 import OrgUnitFilterModal from "./OrgUnitFilterModal";
-export default function Filters({
-  dashboard,
-  handleChartChange,
-  loading,
-  dashboardMenuList,
-  handelFilterSelect,
-}) {
+import OrgunitSelector from "./OrgunitSelector";
+import IndicatorSelector from "./IndicatorSelector";
+import PhaseSelector from "./PhaseSelector";
+export default function Filters(props) {
   return (
-    <Grid item xs={12} md={10} lg={10}>
+    <Grid item xs={12}>
       <Paper
         sx={{
           p: 2,
           display: "flex",
-          flexDirection: "row",
-          height: "400",
-          flexWrap: "nowrap",
-          justifyContent: "flex-end",
+          flexWrap: "wrap",
+          justifyContent: "flex-start",
           alignItems: "center",
-          gap: "2%",
+          gap: "max(2%,20px)",
         }}
       >
-        <FormControl fullWidth>
-          <InputLabel id="demo-simple-select-label">
-            {"Select Dashboard"}
-          </InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={dashboard?.id}
-            label="Select Dashboard"
-            onChange={handleChartChange}
-          >
-            {loading ? (
-              <MenuItem disabled>
-                <CircularProgress size={24} />
-              </MenuItem>
-            ) : (
-              dashboardMenuList()
-            )}
-          </Select>
-        </FormControl>
+        <Grid item xs={12} md={3.8} lg={3.8}>
+          <OrgunitSelector {...props}></OrgunitSelector>
+        </Grid>
 
-        <OrgUnitFilterModal onConfirmed={handelFilterSelect} />
+        <Grid item xs={12} md={3.8} lg={3.8}>
+          <IndicatorSelector {...props}></IndicatorSelector>
+        </Grid>
+
+        <Grid item xs={12} md={3.8} lg={3.8}>
+          <PhaseSelector {...props}></PhaseSelector>
+        </Grid>
       </Paper>
     </Grid>
   );

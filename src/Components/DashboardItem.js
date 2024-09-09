@@ -62,7 +62,7 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import BookmarkAddIcon from "@mui/icons-material/BookmarkAdd";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 import GaugeChart from "../lib";
-import { Share } from "@mui/icons-material";
+import { PanoramaPhotosphere, Share } from "@mui/icons-material";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import FileDownloadIcon from "@mui/icons-material/FileDownload";
@@ -70,8 +70,6 @@ import TextChart from "./TextChart";
 import ResourceComponent from "./ResourceComponent";
 import ScatterChartComponent from "./ScatterChartComponent";
 import MapComponent from "./MapComponent";
-import RadarChartComponent from "./RadarChartComponent";
-
 import { toCSVText, getObjectItems, loess, getItemName } from "../utils/common";
 import { getFilters, getOuDimensions, getDimensions } from "../utils/filters";
 import SingleValueChart from "./SingleValueChart";
@@ -153,7 +151,6 @@ function DashboardItem(props) {
           setLoading(false);
           return;
         }
-
         setChartInfo(data);
 
         let filters = getFilters(
@@ -203,6 +200,8 @@ function DashboardItem(props) {
           });
       })
       .catch((data) => {
+        throw data;
+        console.log(data, "error");
         snackbar.showMessage("Failed to load data!", undefined, undefined, {
           type: "error",
         });
@@ -738,11 +737,50 @@ function DashboardItem(props) {
           ? chartData.metaData.items[chartData.rows[0][0]]?.name
           : "";
 
-      const normalise = (value) => ((6 - value) * 100) / 6;
+      const normalise = (value) => (value * 100) / 6;
+
+      if (
+        componentRef.current &&
+        componentRef.current?.parentElement &&
+        componentRef.current?.parentElement?.style
+      ) {
+        componentRef.current.parentElement.style.display = "flex";
+      }
+      // only show selected indicator
+      if (props?.filters?.indicator && props?.filters?.indicator.id != 0) {
+        if (
+          title
+            .toLowerCase()
+            .includes(props?.filters?.indicator?.name?.toLowerCase()) &&
+          componentRef.current &&
+          componentRef.current?.parentElement &&
+          componentRef.current?.parentElement?.style
+        ) {
+          componentRef.current.parentElement.style.display = "flex";
+        } else {
+          componentRef.current.parentElement.style.display = "none";
+        }
+      }
+
+      const roundedPhase = Math.round(chartData.rows[0][1]);
+
+      if (props?.filters?.phase && props?.filters?.phase.id != 0) {
+        if (
+          roundedPhase == props.filters.phase.id &&
+          componentRef.current &&
+          componentRef.current?.parentElement &&
+          componentRef.current?.parentElement?.style
+        ) {
+          componentRef.current.parentElement.style.display = "flex";
+        } else {
+          componentRef.current.parentElement.style.display = "none";
+        }
+      }
+
       return (
         <div
           style={{
-            minHeight: "100%",
+            minHeight: "80%",
             display: "flex",
             justifyContent: "center",
             flexDirection: "column",
@@ -752,22 +790,23 @@ function DashboardItem(props) {
             display="flex"
             alignItems="center"
             component="div"
-            variant="h3"
+            variant="h4"
             color="primary"
+            gutterBottom
           >
             {chartData.rows[0][1]}
           </Typography>
           <LinearProgress
             variant="determinate"
-            color={"phase" + Math.round(chartData.rows[0][1])}
+            color={"phase" + roundedPhase}
             value={normalise(chartData.rows[0][1])}
             style={{ width: "100%", marginRight: "4px", height: "20px" }}
           />
           <Typography>{title}</Typography>
         </div>
       );
-    } else if (chartInfo.type == "SINGLE_VALUE") {
-      return <SingleValueChart chartData={chartData} />;
+      // } else if (chartInfo.type == "SINGLE_VALUE") {
+      //   return <SingleValueChart chartData={chartData} />;
     } else {
       console.log("Unsupported chart type: " + chartType);
       return (
@@ -943,7 +982,14 @@ function DashboardItem(props) {
       >
         <Grid container spacing={2}>
           <Grid item xs={10} sm={11}>
-            <Title>{title} </Title>
+            <Typography
+              variant="h6"
+              component="h6"
+              color="secondary"
+              gutterBottom
+            >
+              {title}
+            </Typography>
           </Grid>
           <Grid item xs={2} sm={1}>
             {fullScreenItem ? (
@@ -1131,6 +1177,9 @@ function DashboardItems(props) {
   if (props?.items?.length == 0) {
     return <div>Empty Dashboard</div>;
   }
+
+  // do the filter here
+
   return props?.items?.map((item, i) => {
     return (
       <DashboardItem

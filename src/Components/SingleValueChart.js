@@ -31,7 +31,7 @@ const SingleValueChart = ({ chartData }) => {
             display="flex"
             alignItems="center"
             component="div"
-            variant="h1"
+            variant="h2"
             color="primary"
           >
             {value + "%"}
@@ -44,7 +44,7 @@ const SingleValueChart = ({ chartData }) => {
               display="flex"
               alignItems="center"
               component="div"
-              variant="h1"
+              variant="h2"
               color="primary"
             >
               {value}
@@ -61,7 +61,7 @@ const SingleValueChart = ({ chartData }) => {
           display="flex"
           alignItems="center"
           component="div"
-          variant="h1"
+          variant="h2"
           color="primary"
         >
           {value}
