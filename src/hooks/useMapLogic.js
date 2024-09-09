@@ -7,7 +7,6 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
   const [hoveredRegion, setHoveredRegion] = useState(null);
   let mapBounds = null;
 
-
   const processChartData = (chartData) => {
     const chartConfig = {
       series: [],
@@ -89,14 +88,14 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
   const handleMouseEnter = (e, region) => {
     setHoveredRegion(region);
     e.target.setStyle({
-      weight: 5,
+      weight: 3,
     });
   };
 
   const handleMouseLeave = (e) => {
     setHoveredRegion(null);
     e.target.setStyle({
-      weight: 2,
+      weight: 1,
     });
   };
 
@@ -111,7 +110,14 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
     return Math.abs(area / 2);
   };
 
-  const processMapLayer = (chartConfig, displayName, shape, colorScale, opacity, layer) => {
+  const processMapLayer = (
+    chartConfig,
+    displayName,
+    shape,
+    colorScale,
+    opacity,
+    layer
+  ) => {
     console.log("inner chart config", chartConfig, layer);
     const mapData = chartConfig?.series;
     const regionList = chartConfig?.yAxis?.categories;

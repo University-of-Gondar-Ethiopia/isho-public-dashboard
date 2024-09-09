@@ -180,7 +180,7 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
           positions={polygon}
           color="#000"
           fillOpacity={opacity}
-          weight={2}
+          weight={1}
           eventHandlers={{
             mouseover: (e) => handleMouseEnter(e, region),
             mouseout: (e) => handleMouseLeave(e),
@@ -239,7 +239,7 @@ const Map = ({ mapViews, chartDatas, shapes, basemap }) => {
           fillColor={color}
           color="#000"
           fillOpacity={opacity}
-          weight={2}
+          weight={1}
           eventHandlers={{
             mouseover: (e) => handleMouseEnter(e, region),
             mouseout: (e) => handleMouseLeave(e),
