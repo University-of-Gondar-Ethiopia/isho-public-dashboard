@@ -18,7 +18,7 @@ import { mainListItems } from "./listItems";
 import Chart from "./Chart";
 import SecondaryListItems from "./SecondaryListItems";
 import theme from "../theme";
-
+import ReactGA from "react-ga4";
 // import MapChart from "./MapChart";
 
 function Copyright(props) {
@@ -86,7 +86,13 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Dashboard() {
-  const [open, setOpen] = React.useState(false);
+  // Send pageview with a custom path
+  ReactGA.send({
+    hitType: "pageview",
+    page: "/",
+    title: "Dashboard Main page",
+  });
+  const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
     setOpen(!open);
   };

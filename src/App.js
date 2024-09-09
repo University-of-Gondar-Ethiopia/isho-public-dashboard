@@ -4,8 +4,12 @@ import Dashboard from "./Components/Dashboard";
 import RequestForm from "./Components/RequestForm";
 import useServiceWorker from "./hooks/useServiceWorker";
 import Indicator from "./Components/Indicator";
+import ReactGA from "react-ga4";
 
 export default function App() {
+  const GAKey = process.env.REACT_APP_GA_ID;
+  ReactGA.initialize(GAKey);
+
   useServiceWorker();
 
   return (

@@ -27,7 +27,6 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
         return chartConfig;
       }
 
-      console.log("rows", rows);
       for (const row of rows) {
         chartConfig?.data?.push({
           label: getItemName(chartData, row[0]),
@@ -116,9 +115,9 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
     shape,
     colorScale,
     opacity,
-    layer
+    layer,
+    thematicMapType
   ) => {
-    console.log("inner chart config", chartConfig, layer);
     const mapData = chartConfig?.series;
     const regionList = chartConfig?.yAxis?.categories;
     const numColors = regionList?.length;
@@ -137,9 +136,9 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
         .scale(colorScale?.split(","))
         .domain([mn, mx])
         .colors(numColors);
-    } else {
-      // colorScaleArray = []
     }
+
+    console.log("region color2", regionList, colorScale, colorScaleArray);
 
     const regionColors = regionList?.map((regionName, index) => {
       const value = combinedData[index];
@@ -182,26 +181,32 @@ export const useMapLogic = (mapViews, chartDatas, shapes) => {
       mapData,
       opacity,
       layer,
+      thematicMapType,
     };
   };
 
-  const parsedMapViews = mapViews.map((view) => {
-    const chartConfig = processChartData(chartDatas[view.id]);
+  const layerOrder = ["orgUnit", "thematic", "facility"];
+  const parsedMapViews = mapViews
+    .map((view) => {
+      console.log("view here", view, mapViews, chartDatas);
+      const chartConfig = processChartData(chartDatas[view.id]);
 
-    if (view.layer === "thematic" && chartConfig.series.length === 0) {
-      return null;
-    }
-    console.log("chartConfig", chartConfig);
-    console.log("view", "shape", shapes[view.id], view);
-    return processMapLayer(
-      chartConfig,
-      view?.displayName,
-      shapes[view.id],
-      view?.colorScale,
-      view?.opacity,
-      view.layer
-    );
-  });
+      if (view.layer === "thematic" && chartConfig.series.length === 0) {
+        return null;
+      }
+
+      return processMapLayer(
+        chartConfig,
+        view?.displayName,
+        shapes[view.id],
+        view?.colorScale ?? "#ffffd4,#fed98e,#fe9929,#d95f0e,#993404",
+        view?.opacity,
+        view.layer,
+        view?.thematicMapType
+      );
+    })
+    .filter(Boolean)
+    .sort((a, b) => layerOrder.indexOf(a.layer) - layerOrder.indexOf(b.layer));
 
   return {
     parsedMapViews,

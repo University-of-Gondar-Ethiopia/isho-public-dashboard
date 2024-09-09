@@ -16,7 +16,7 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
       try {
         // Order mapViews by layer type
         const orderedMapViews = [...data.mapViews].sort((a, b) => {
-          const order = ["thematic", "orgUnit", "facility"];
+          const order = ["orgUnit", "facility", "thematic"];
           return order.indexOf(a.layer) - order.indexOf(b.layer);
         });
 
@@ -30,12 +30,14 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
 
           const response = await fetch(encodeURI(geoFeaturesUrl));
           const shapeData = await response.json();
-          if (view.layer != "orgUnit") {
+          if (view.layer == "thematic") {
             try {
-              url += dimension + filters;
-              let analyticsData = await fetch(encodeURI(url));
+              // url += dimension + filters;
+              let analyticsData = await fetch(
+                encodeURI(url + dimension + filters)
+              );
               let chartData = await analyticsData.json();
-              console.log("chartData", analyticsData);
+              console.log("chartData", analyticsData, chartData);
               setChartData((prevChartData) => ({
                 ...prevChartData,
                 [view.id]: chartData,
@@ -57,8 +59,6 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
             ...prevShapes,
             [view.id]: shapeData,
           }));
-
-          console.log(view, filters, dimension, "log image");
         });
 
         await Promise.all(promises);
@@ -82,7 +82,7 @@ function MapComponent({ data, setMapData, mainProps, setLoading }) {
   }
 
   console.log("data", data);
-  console.log("shape", shapes);
+  // console.log("shape charts_data", chartData, data.mapViews);
 
   return (
     <Map
