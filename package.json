@@ -39,8 +39,7 @@
     "react-scripts": "latest",
     "regression": "^2.0.1",
     "science": "^1.9.3",
-    "xlsx": "^0.18.5",
-    "@nivo/radar": "^0.87.0"
+    "xlsx": "^0.18.5"
   },
   "browserslist": {
     "production": [
